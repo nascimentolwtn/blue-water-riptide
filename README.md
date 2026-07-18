@@ -1,6 +1,6 @@
 # Blue Water Riptide
 
-A top-down team arena game inspired by *Brawl Stars*, reimagined as marine/navy-themed **beach volleyball**. Roster and lore seeds live in [`sailors.md`](sailors.md).
+A top-down team arena brawler in the *Brawl Stars* pattern — team-based combat, basic attack + charged Super per character, knockout win condition. Marine/navy and beach-volleyball are **cosmetic theme only** (character names, attack names, art, arena dressing) — there is no ball, no scoring zones, no sport rules. Roster and lore seeds live in [`.claude/plans/sailors.md`](.claude/plans/sailors.md); see [`.claude/plans/00-game-design-overview.md`](.claude/plans/00-game-design-overview.md) for the authoritative design.
 
 ## Engine & Target Platforms
 
@@ -20,8 +20,8 @@ A top-down team arena game inspired by *Brawl Stars*, reimagined as marine/navy-
 Assets/
   Scripts/
     Core/         # game loop, match/session state, score & rules
-    Gameplay/      # ball physics, court, serve/spike/block mechanics
-    Characters/    # sailor ("sailor") stats, abilities, controllers
+    Gameplay/      # combat resolution (projectiles, melee/AOE, knockback), court/arena
+    Characters/    # Sailor stats, abilities, controllers
     Networking/    # NGO setup, LAN discovery, session/lobby glue
     UI/            # menus, HUD, team select
     AI/            # single-player opponent AI
@@ -55,3 +55,5 @@ See [`.claude/plans/`](.claude/plans/) for the initial version plans:
 - `01-single-player-mode.md`
 - `02-local-network-mode.md`
 - `03-online-mode-future.md`
+- `04-menu-navigation-lobby.md`
+- `05-gamification-trophies-ranking.md`
