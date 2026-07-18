@@ -16,6 +16,10 @@
 4. **[2026-07-17] Two independent axes: connection mode vs ruleset**
    Do instead: Single Player / Local Network / Online are *connection modes* (`01`-`03`); "Sink or Swim" knockout is the *ruleset* (`00` §1). Don't conflate them when adding new modes or rulesets later.
 
+## Platform & Device Constraints
+1. **[2026-07-17] Target Android devices: S20 FE, S21 FE, S25, S25+, S25 FE**
+   Do instead: optimize for S21 FE (lowest-end: 4GB RAM, Snapdragon 888) as baseline; target API 14+, minimum API 10. Test critical paths on S21 FE hardware or emulator before build.
+
 ## Execution & Validation
 1. **[2026-07-17] No Unity Editor run in this environment**
    Do instead: repo is scaffolded (folders, manifest.json, .gitignore) but `ProjectSettings/`/`Library/` aren't generated. Opening in Unity Hub is a step for the user, not something to fake or fabricate here.
