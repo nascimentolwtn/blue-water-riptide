@@ -37,21 +37,22 @@
    Do instead: when a Backlog item below is finished, add a dated entry to `CHANGELOG.md` and delete it from the Backlog category here — keep this list to pending work only.
 
 ## Backlog
-1. **[2026-07-17] Build Core shared systems**
-   Do instead: implement `MatchController` state machine, `Session` model, `MatchRules` ScriptableObject per `00-game-design-overview.md` §7.
-2. **[2026-07-17] Build Character & Ability framework**
-   Do instead: implement `SailorDefinition` + `AbilityDefinition` ScriptableObjects and reusable ability behaviors (projectile, dash/leap, area, aura, wall) per `00` §2/§7.
-3. **[2026-07-17] Implement the 2 v1 Sailors**
-   Do instead: build Ensign Ace (ranged) and Admiral Anchor (melee tank) through the framework above, not hard-coded, per `00` §3.
-4. **[2026-07-17] Build the Tideline Cove arena**
-   Do instead: arena prefab + tile/spawn data asset per `00` §5, registered in a single-entry `ArenaCatalog`.
-5. **[2026-07-17] Implement Single Player mode**
-   Do instead: `AITeamBuilder` sampling the 2-Sailor pool + per-archetype AI behaviors per `01-single-player-mode.md`.
-6. **[2026-07-17] Implement Local Network mode**
-   Do instead: Netcode for GameObjects host/client + UDP LAN discovery/advertisement per `02-local-network-mode.md`.
-7. **[2026-07-17] Build menu navigation & lobby UI**
-   Do instead: `UIStateController` nav stack, Home/Mode Select/Lobby screens per `04-menu-navigation-lobby.md`, thin over Core events.
-8. **[2026-07-17] Implement progression: Trophies, Voyage Road, Doubloons, Fleet Rank**
-   Do instead: local JSON save schema + Fleet Rank tiers per `00` §6 and `05-gamification-trophies-ranking.md`.
-9. **[2026-07-17] Lay online-readiness groundwork**
-   Do instead: keep `Session`/ability framework transport-agnostic per the "do this now" checklist in `03-online-mode-future.md`.
+Each item tagged **[File]** (pure C# / ScriptableObject class defs / JSON / interfaces — completable in files, no Unity IDE needed, safe to do remotely) or **[Editor/Asset]** (scene/prefab composition, Inspector wiring, art/animation import, on-device testing — needs the Unity Editor open). Data that can be expressed as code/defaults is classified [File] even if it ends up serialized into a `.asset` — see the per-plan "Remote vs Editor-only work" section for the general rule.
+1. **[2026-07-18] Build Core shared systems** — **[File]**
+   Do instead: implement `MatchController` state machine, `Session` model, `MatchRules` ScriptableObject *class* (fields/defaults) per `00-game-design-overview.md` §7 — pure C# logic and data-class definitions, no scenes/prefabs/art required. (Instantiating the actual `MatchRules` .asset via the Editor's Create menu is a seconds-long follow-up, not a blocker.)
+2. **[2026-07-18] Build Character & Ability framework** — **[File]**
+   Do instead: implement `SailorDefinition`/`AbilityDefinition` ScriptableObject *classes* and reusable ability behaviors (projectile, dash/leap, area, aura, wall) per `00` §2/§7 as C# code — no art dependency. Creating the actual per-Sailor asset instances and linking prefab refs is Editor-bound; tracked under item 3.
+3. **[2026-07-18] Implement the 2 v1 Sailors** — **[Editor/Asset]**
+   Do instead: build Ensign Ace and Admiral Anchor *pawn prefabs* (animator, hitbox, HP bar hookup) and wire their `SailorDefinition`/`AbilityDefinition` asset instances through the framework per `00` §3 — needs the Unity Editor for prefab assembly, Inspector wiring, and eventual character art/animation. Ability logic itself is [File] work under item 2.
+4. **[2026-07-18] Build the Tideline Cove arena** — **[Editor/Asset]**
+   Do instead: arena prefab + tile/spawn data asset per `00` §5, registered in `ArenaCatalog` — scene/prefab composition in the Editor; even greybox primitives require placing geometry in a scene.
+5. **[2026-07-18] Implement Single Player mode (AI/session logic)** — **[File]**
+   Do instead: `AITeamBuilder`, `AIInputDriver`, `AIPerception`, utility-state AI, `AISquadBrain`, difficulty parameter sets, `SinglePlayerLauncher` per `01-single-player-mode.md` — pure C# simulation/decision code, no scenes required. TeamSelect/Results screen assembly is Editor-bound, tracked under item 7.
+6. **[2026-07-18] Implement Local Network mode (networking logic)** — **[File]**
+   Do instead: `NetworkInputDriver`, `LanSessionAdvertiser`/`Scanner`, `LobbyState`, `LanSessionLauncher`, rejoin/connection-approval logic per `02-local-network-mode.md` as C# code. Attaching `NetworkObject`/`NetworkTransform` to prefabs and configuring `NetworkManager` in-scene is Editor-bound — a small follow-up, not a blocker to writing the classes.
+7. **[2026-07-18] Build menu navigation & lobby UI** — **[Editor/Asset]**
+   Do instead: `UIStateController` nav-stack code is [File]-doable on its own, but the Home/Mode Select/Lobby/TeamSelect/Results *screens* (Canvas layout, prefab assembly, visual hierarchy) per `04-menu-navigation-lobby.md` need the Editor's UI tools.
+8. **[2026-07-18] Implement progression: Trophies, Voyage Road, Doubloons, Fleet Rank** — **[File]**
+   Do instead: local JSON save schema, `ProgressionService`, and `FleetRankDefinition` tier data per `00` §6 and `05-gamification-trophies-ranking.md` — pure C# + data, programmable without the Editor. Voyage Road/Locker screen visuals are Editor-bound, tracked under item 7.
+9. **[2026-07-18] Lay online-readiness groundwork** — **[File]**
+   Do instead: keep `Session`/ability framework transport-agnostic, define the `ISessionProvider` interface per the "do this now" checklist in `03-online-mode-future.md` — pure C# architecture, no assets involved.

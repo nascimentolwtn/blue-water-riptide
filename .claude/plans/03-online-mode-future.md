@@ -46,3 +46,7 @@ Checklist — each item is cheap now and expensive to retrofit:
 2. Solo-queue matchmaking (trophy-banded) on the same foundation.
 3. Cloud save adoption; friend list/invites.
 4. Evaluate dedicated servers only if ranked/competitive play becomes a goal.
+
+## 5. Remote vs Editor-only work
+
+The "do this now" checklist (§3) is entirely **[File]** work — interfaces, transport-agnostic architecture, id-keying conventions, no scenes/prefabs/services to wire yet. When online is actually greenlit, expect the split to look like Plan 02's: session/relay C# logic is [File], service dashboard setup (Unity Relay/Lobby/Matchmaker/Authentication project config) and any new lobby-entry screens are **[Editor/Asset]**. See the general rule in `00` §8 and the classified backlog in `.claude/napkin.md`.

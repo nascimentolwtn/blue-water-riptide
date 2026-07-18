@@ -138,3 +138,7 @@ Deliberately thin; do not spec further until online is greenlit. The intent is s
 - **Sailor select is trivial by design** — 2 tiles in TeamSelect/Lobby, 2 tiles + teasers in the Locker. Do not build filtering, sorting, or squadron tabs until the roster justifies them (`00` §4 roadmap).
 - **Online is a greyed card + this sketch** — building its entry screens now would violate Plan 03's deferral.
 - **No shop/clubs/quests screens** — roadmap placeholders only, matching `00` §6's exclusions. Plan 05 adds the small v1 gamification surfaces (first-win bonus, achievements list) as sub-sections of existing screens, not new top-level destinations.
+
+## 6. Remote vs Editor-only work
+
+`UIStateController`/`UIScreen` nav-stack plumbing (§4) is **[File]** work — pure C# writeable without Unity open. Every actual *screen* (Home, Locker, Voyage Road, Mode Select, Local Play stack, HUD, Results overlay — Canvas layout, prefab assembly, visual hierarchy) is **[Editor/Asset]**: it needs the Editor's UI tools. See the general rule in `00` §8 and the classified backlog in `.claude/napkin.md`.

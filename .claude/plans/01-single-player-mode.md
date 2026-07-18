@@ -84,3 +84,7 @@ Keep `Assets/Scripts/Networking/` empty in this phase — nothing SP-specific ma
 - Balance pass: Ace vs Anchor matchup data from AI-vs-AI batch simulations (run headless in editor — a side benefit of the transport-agnostic sim).
 
 Milestone M2's exit is the gate for starting Plan 02 work in parallel — the Session/InputCommand seams must be stable by then.
+
+## 6. Remote vs Editor-only work
+
+Tag tasks from the script layout/milestones above as **[File]** (AI/session C# logic — `AITeamBuilder`, `AIInputDriver`, `AIPerception`, utility states, `AISquadBrain`, difficulty sets, `SinglePlayerLauncher` — writeable without Unity open) or **[Editor/Asset]** (scene setup, Sailor pawn prefabs, TeamSelect/Results screen assembly, on-device 60fps verification). See the general rule in `00` §8 and the classified backlog in `.claude/napkin.md`.

@@ -76,3 +76,7 @@ All new code in `Assets/Scripts/Networking/` (plus UI screens in `UI/`). Nothing
 - Lobby QoL (player name from profile, team-color preview, connection-quality indicator), reconnect UX, error-message pass.
 - Performance: bandwidth audit (target well under 30KB/s per client — trivial at this scale, but establish the measuring habit), CPU cost of host+client on the weakest supported device (the host phone runs sim + AI + rendering).
 - Co-op difficulty tuning (AI enemy team at selectable difficulty, shared by both human players).
+
+## 7. Remote vs Editor-only work
+
+Tag tasks from the script layout/milestones above as **[File]** (`NetworkInputDriver`, `LanSessionAdvertiser`/`Scanner`, `LobbyState`, `LanSessionLauncher`, connection-approval/rejoin logic — pure C# writeable without Unity open) or **[Editor/Asset]** (attaching `NetworkObject`/`NetworkTransform` to prefabs, configuring `NetworkManager` in-scene, Local Play UI screens, two-device soak testing). See the general rule in `00` §8 and the classified backlog in `.claude/napkin.md`.

@@ -121,3 +121,7 @@ Rules that prevent migration pain later:
 2. **Plan 01 M4 / Plan 02 M4**: Commendations, personal records panel, LAN lobby scoreboard fields, celebration UX polish.
 3. **Post-v1 (content-gated)**: match-end bonus objectives, Sailing Orders daily quests.
 4. **Plan 03-gated**: global/friends leaderboards, Flagship League seasonal ranked, server-validated rewards.
+
+## 8. Remote vs Editor-only work
+
+`ProgressionService`, the JSON save schema (§6), and `FleetRankDefinition`/`CommendationCatalog` tier/id data are **[File]** work — pure C# + data, programmable without Unity open. The badges, claim animations, and panels that surface this data (Home widgets, Voyage Road screen, records panel — Plan 04's screens) are **[Editor/Asset]**. See the general rule in `00` §8 and the classified backlog in `.claude/napkin.md`.
