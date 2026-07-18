@@ -12,26 +12,22 @@ namespace BlueWaterRiptide.Gameplay.Combat
     {
         const float LifetimeSafetyLimit = 5f;
 
-        ParticipantId _ownerId;
-        Team _ownerTeam;
+        SailorPawn _owner;
         Vector3 _direction;
         float _speed;
         float _damage;
         float _maxRange;
-        MatchController _matchController;
 
         float _distanceTraveled;
         float _age;
 
-        public void Initialize(ParticipantId ownerId, Team ownerTeam, Vector3 direction, float speed, float damage, float maxRange, MatchController matchController)
+        public void Initialize(SailorPawn owner, Vector3 direction, float speed, float damage, float maxRange)
         {
-            _ownerId = ownerId;
-            _ownerTeam = ownerTeam;
+            _owner = owner;
             _direction = direction.normalized;
             _speed = speed;
             _damage = damage;
             _maxRange = maxRange;
-            _matchController = matchController;
 
             _distanceTraveled = 0f;
             _age = 0f;
@@ -56,11 +52,12 @@ namespace BlueWaterRiptide.Gameplay.Combat
             if (pawn == null) pawn = other.GetComponentInParent<SailorPawn>();
             if (pawn == null) return;
 
-            if (pawn.Id == _ownerId) return;
-            if (pawn.Team == _ownerTeam) return;
+            if (_owner == null) return;
+            if (pawn.Id == _owner.Id) return;
+            if (pawn.Team == _owner.Team) return;
             if (pawn.IsKnockedOut) return;
 
-            CombatResolver.ApplyDamage(pawn, _damage, _ownerId);
+            CombatResolver.ApplyDamage(pawn, _damage, _owner);
             Destroy(gameObject);
         }
     }

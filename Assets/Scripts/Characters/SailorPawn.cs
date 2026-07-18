@@ -1,12 +1,13 @@
 using BlueWaterRiptide.Core;
-using BlueWaterRiptide.Gameplay.Combat;
 using UnityEngine;
 
 namespace BlueWaterRiptide.Characters
 {
     /// <summary>
     /// The pawn both the human player and the AI opponent use identically — it only ever
-    /// talks to an IInputDriver, never knows if it's touch/keyboard/AI.
+    /// talks to an IInputDriver and its Definition's IAbilityBehaviors, never knows if it's
+    /// touch/keyboard/AI, or what kit it's running. Adding a Sailor is data (SailorDefinitionData
+    /// + ability behavior instances), never a SailorPawn change.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class SailorPawn : MonoBehaviour
@@ -18,15 +19,22 @@ namespace BlueWaterRiptide.Characters
         public float HpFraction => Definition == null ? 0f : Mathf.Clamp01(CurrentHP / Definition.MaxHP);
         public int CurrentAmmo { get; private set; }
         public bool IsKnockedOut { get; private set; }
+        public float SuperCharge01 { get; private set; }
 
         public Vector2 ArenaHalfExtents = new Vector2(1000f, 1000f);
 
         const float FireCooldownDuration = 0.35f;
+        const float KnockbackDecayPerSecond = 6f;
 
         IInputDriver _driver;
         MatchController _matchController;
         float _reloadTimer;
         float _fireCooldownTimer;
+        float _superCharge;
+
+        Vector3 _knockbackVelocity;
+        float _damageReductionFraction;
+        float _damageReductionTimer;
 
         public void Initialize(ParticipantId id, Team team, SailorDefinitionData definition, IInputDriver driver, MatchController matchController)
         {
@@ -41,13 +49,19 @@ namespace BlueWaterRiptide.Characters
             IsKnockedOut = false;
             _reloadTimer = 0f;
             _fireCooldownTimer = 0f;
+            _superCharge = 0f;
+            SuperCharge01 = 0f;
+            _knockbackVelocity = Vector3.zero;
+            _damageReductionFraction = 0f;
+            _damageReductionTimer = 0f;
         }
 
         public void ApplyDamage(float amount, ParticipantId source)
         {
             if (IsKnockedOut) return;
 
-            CurrentHP -= amount;
+            float mitigated = _damageReductionTimer > 0f ? amount * (1f - _damageReductionFraction) : amount;
+            CurrentHP -= mitigated;
 
             if (CurrentHP <= 0f)
             {
@@ -64,21 +78,49 @@ namespace BlueWaterRiptide.Characters
             }
         }
 
+        /// <summary>Called by CombatResolver on whoever dealt damage — Super "charges by dealing damage" (00 §2).</summary>
+        public void AddSuperCharge(float damageDealt)
+        {
+            if (Definition == null || Definition.Super == null) return;
+            _superCharge = Mathf.Min(_superCharge + damageDealt, Definition.SuperChargeThreshold);
+            SuperCharge01 = Definition.SuperChargeThreshold > 0f ? _superCharge / Definition.SuperChargeThreshold : 0f;
+        }
+
+        /// <summary>Instant velocity impulse that decays over a fraction of a second; no-op if this Sailor's Trait grants knockback immunity.</summary>
+        public void ApplyKnockback(Vector3 direction, float force)
+        {
+            if (Definition != null && Definition.KnockbackImmune) return;
+            _knockbackVelocity = direction.normalized * force;
+        }
+
+        /// <summary>Temporary incoming-damage reduction, e.g. Drop Anchor's ally aura.</summary>
+        public void ApplyDamageReductionBuff(float fraction, float duration)
+        {
+            _damageReductionFraction = fraction;
+            _damageReductionTimer = duration;
+        }
+
         void Update()
         {
             if (IsKnockedOut) return;
+
+            // Timers that run regardless of driver availability
+            if (_damageReductionTimer > 0f) _damageReductionTimer -= Time.deltaTime;
+
             if (_driver == null || Definition == null) return;
 
             var cmd = _driver.Sample(Time.timeAsDouble);
 
-            // Movement
+            // Movement (input-driven + decaying knockback impulse)
             Vector3 moveDir = new Vector3(cmd.Move.x, 0f, cmd.Move.y);
             if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
 
-            Vector3 pos = transform.position + moveDir * Definition.MoveSpeed * Time.deltaTime;
+            Vector3 pos = transform.position + moveDir * Definition.MoveSpeed * Time.deltaTime + _knockbackVelocity * Time.deltaTime;
             pos.x = Mathf.Clamp(pos.x, -ArenaHalfExtents.x, ArenaHalfExtents.x);
             pos.z = Mathf.Clamp(pos.z, -ArenaHalfExtents.y, ArenaHalfExtents.y);
             transform.position = pos;
+
+            _knockbackVelocity = Vector3.MoveTowards(_knockbackVelocity, Vector3.zero, KnockbackDecayPerSecond * _knockbackVelocity.magnitude * Time.deltaTime + 0.01f);
 
             // Aim
             if (cmd.Aim.sqrMagnitude > 0.0001f)
@@ -98,39 +140,23 @@ namespace BlueWaterRiptide.Characters
                 }
             }
 
-            // Fire cooldown
+            // Basic attack (fire-rate cooldown gates ammo-based firing; behavior itself is data-driven)
             if (_fireCooldownTimer > 0f) _fireCooldownTimer -= Time.deltaTime;
 
-            if (cmd.FireHeld && CurrentAmmo > 0 && _fireCooldownTimer <= 0f)
+            if (cmd.FireHeld && CurrentAmmo > 0 && _fireCooldownTimer <= 0f && Definition.BasicAttack != null)
             {
-                Fire();
+                Definition.BasicAttack.Execute(this);
                 CurrentAmmo--;
                 _fireCooldownTimer = FireCooldownDuration;
             }
-        }
 
-        void Fire()
-        {
-            GameObject projectileObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            projectileObj.name = "Projectile";
-            projectileObj.transform.position = transform.position + transform.forward * 1.2f + Vector3.up * 0.5f;
-            projectileObj.transform.localScale = Vector3.one * 0.4f;
-
-            var renderer = projectileObj.GetComponent<Renderer>();
-            if (renderer != null)
+            // Super
+            if (cmd.SuperPressed && SuperCharge01 >= 1f && Definition.Super != null)
             {
-                renderer.material = CreateUrpMaterial(Team == Team.A ? Color.cyan : Color.magenta);
+                Definition.Super.Execute(this);
+                _superCharge = 0f;
+                SuperCharge01 = 0f;
             }
-
-            var sphereCollider = projectileObj.GetComponent<SphereCollider>();
-            if (sphereCollider != null) sphereCollider.isTrigger = true;
-
-            var rigidbody = projectileObj.AddComponent<Rigidbody>();
-            rigidbody.isKinematic = true;
-            rigidbody.useGravity = false;
-
-            var projectile = projectileObj.AddComponent<Projectile>();
-            projectile.Initialize(Id, Team, transform.forward, Definition.ProjectileSpeed, Definition.AttackDamage, Definition.AttackRange, _matchController);
         }
 
         /// <summary>

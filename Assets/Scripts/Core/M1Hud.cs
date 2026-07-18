@@ -38,10 +38,11 @@ namespace BlueWaterRiptide.Core
         {
             if (_player == null || _enemy == null) return;
 
-            GUI.Box(new Rect(10, 10, 260, 80), "");
-            GUI.Label(new Rect(20, 15, 240, 20), $"You:   {Mathf.CeilToInt(_player.CurrentHP)} HP   Ammo {_player.CurrentAmmo}");
-            GUI.Label(new Rect(20, 35, 240, 20), $"Enemy: {Mathf.CeilToInt(_enemy.CurrentHP)} HP   Ammo {_enemy.CurrentAmmo}");
-            GUI.Label(new Rect(20, 60, 240, 20), "WASD move · Mouse aim · Hold LMB fire");
+            GUI.Box(new Rect(10, 10, 280, 100), "");
+            GUI.Label(new Rect(20, 15, 260, 20), $"You:   {Mathf.CeilToInt(_player.CurrentHP)} HP   Ammo {_player.CurrentAmmo}   Super {Mathf.RoundToInt(_player.SuperCharge01 * 100f)}%");
+            GUI.Label(new Rect(20, 35, 260, 20), $"Enemy: {Mathf.CeilToInt(_enemy.CurrentHP)} HP   Ammo {_enemy.CurrentAmmo}");
+            GUI.Label(new Rect(20, 60, 260, 20), "WASD move · Mouse aim · Hold LMB fire");
+            GUI.Label(new Rect(20, 78, 260, 20), "RMB: Super (Drop Anchor) when charged");
 
             if (!string.IsNullOrEmpty(_resultText))
             {

@@ -29,7 +29,10 @@ namespace BlueWaterRiptide.Core
             BuildGround(root.transform, out Vector2 halfExtents);
             var cam = BuildCamera();
 
-            var playerGo = BuildPawnObject(root.transform, "Player_Ace", new Vector3(-8f, 1f, 0f), Color.blue);
+            var playerDefinition = SailorDefinitionData.AdmiralAnchor;
+            var enemyDefinition = SailorDefinitionData.EnsignAce;
+
+            var playerGo = BuildPawnObject(root.transform, "Player_Anchor", new Vector3(-8f, 1f, 0f), Color.blue);
             var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", new Vector3(8f, 1f, 0f), Color.red);
 
             var playerPawn = playerGo.AddComponent<SailorPawn>();
@@ -37,17 +40,17 @@ namespace BlueWaterRiptide.Core
 
             var participants = new List<ParticipantInfo>
             {
-                new ParticipantInfo(new ParticipantId(0), Team.A, DriverType.Human, "sailor.ace"),
-                new ParticipantInfo(new ParticipantId(1), Team.B, DriverType.AI, "sailor.ace"),
+                new ParticipantInfo(new ParticipantId(0), Team.A, DriverType.Human, playerDefinition.Id),
+                new ParticipantInfo(new ParticipantId(1), Team.B, DriverType.AI, enemyDefinition.Id),
             };
             var session = new Session("sink-or-swim", "prototype", participants);
             var matchController = new MatchController(session, MatchRules.M1Defaults);
 
             var playerDriver = new KeyboardMouseInputDriver(playerGo.transform, cam);
-            var enemyDriver = new DummyAIInputDriver(enemyGo.transform, playerGo.transform, 15f);
+            var enemyDriver = new DummyAIInputDriver(enemyGo.transform, playerGo.transform, enemyDefinition.AttackRange);
 
-            playerPawn.Initialize(new ParticipantId(0), Team.A, SailorDefinitionData.EnsignAce, playerDriver, matchController);
-            enemyPawn.Initialize(new ParticipantId(1), Team.B, SailorDefinitionData.EnsignAce, enemyDriver, matchController);
+            playerPawn.Initialize(new ParticipantId(0), Team.A, playerDefinition, playerDriver, matchController);
+            enemyPawn.Initialize(new ParticipantId(1), Team.B, enemyDefinition, enemyDriver, matchController);
 
             playerPawn.ArenaHalfExtents = halfExtents;
             enemyPawn.ArenaHalfExtents = halfExtents;
