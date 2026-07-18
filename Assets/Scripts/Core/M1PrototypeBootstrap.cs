@@ -23,42 +23,49 @@ namespace BlueWaterRiptide.Core
 
         static void Build()
         {
-            var root = new GameObject("M1Prototype");
-
-            BuildLighting();
-            BuildGround(root.transform, out Vector2 halfExtents);
-            var cam = BuildCamera();
-
-            var playerDefinition = SailorDefinitionData.AdmiralAnchor;
-            var enemyDefinition = SailorDefinitionData.EnsignAce;
-
-            var playerGo = BuildPawnObject(root.transform, "Player_Anchor", new Vector3(-8f, 1f, 0f), Color.blue);
-            var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", new Vector3(8f, 1f, 0f), Color.red);
-
-            var playerPawn = playerGo.AddComponent<SailorPawn>();
-            var enemyPawn = enemyGo.AddComponent<SailorPawn>();
-
-            var participants = new List<ParticipantInfo>
+            try
             {
-                new ParticipantInfo(new ParticipantId(0), Team.A, DriverType.Human, playerDefinition.Id),
-                new ParticipantInfo(new ParticipantId(1), Team.B, DriverType.AI, enemyDefinition.Id),
-            };
-            var session = new Session("sink-or-swim", "prototype", participants);
-            var matchController = new MatchController(session, MatchRules.M1Defaults);
+                var root = new GameObject("M1Prototype");
 
-            var playerDriver = new KeyboardMouseInputDriver(playerGo.transform, cam);
-            var enemyDriver = new DummyAIInputDriver(enemyGo.transform, playerGo.transform, enemyDefinition.AttackRange);
+                BuildLighting();
+                BuildGround(root.transform, out Vector2 halfExtents);
+                var cam = BuildCamera();
 
-            playerPawn.Initialize(new ParticipantId(0), Team.A, playerDefinition, playerDriver, matchController);
-            enemyPawn.Initialize(new ParticipantId(1), Team.B, enemyDefinition, enemyDriver, matchController);
+                var playerDefinition = SailorDefinitionData.AdmiralAnchor;
+                var enemyDefinition = SailorDefinitionData.EnsignAce;
 
-            playerPawn.ArenaHalfExtents = halfExtents;
-            enemyPawn.ArenaHalfExtents = halfExtents;
+                var playerGo = BuildPawnObject(root.transform, "Player_Anchor", new Vector3(-8f, 1f, 0f), Color.blue);
+                var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", new Vector3(8f, 1f, 0f), Color.red);
 
-            matchController.StartMatch();
+                var playerPawn = playerGo.AddComponent<SailorPawn>();
+                var enemyPawn = enemyGo.AddComponent<SailorPawn>();
 
-            var hud = root.AddComponent<M1Hud>();
-            hud.Initialize(playerPawn, enemyPawn, matchController);
+                var participants = new List<ParticipantInfo>
+                {
+                    new ParticipantInfo(new ParticipantId(0), Team.A, DriverType.Human, playerDefinition.Id),
+                    new ParticipantInfo(new ParticipantId(1), Team.B, DriverType.AI, enemyDefinition.Id),
+                };
+                var session = new Session("sink-or-swim", "prototype", participants);
+                var matchController = new MatchController(session, MatchRules.M1Defaults);
+
+                var playerDriver = new KeyboardMouseInputDriver(playerGo.transform, cam);
+                var enemyDriver = new DummyAIInputDriver(enemyGo.transform, playerGo.transform, enemyDefinition.AttackRange);
+
+                playerPawn.Initialize(new ParticipantId(0), Team.A, playerDefinition, playerDriver, matchController);
+                enemyPawn.Initialize(new ParticipantId(1), Team.B, enemyDefinition, enemyDriver, matchController);
+
+                playerPawn.ArenaHalfExtents = halfExtents;
+                enemyPawn.ArenaHalfExtents = halfExtents;
+
+                matchController.StartMatch();
+
+                var hud = root.AddComponent<M1Hud>();
+                hud.Initialize(playerPawn, enemyPawn, matchController);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"BWR_BOOT_FAILED: {e.GetType().Name}: {e.Message}\n{e.StackTrace}");
+            }
         }
 
         static void BuildLighting()

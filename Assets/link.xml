@@ -1,0 +1,16 @@
+<linker>
+  <!--
+    GameObject.CreatePrimitive(...) attaches these Collider types natively at runtime, which
+    IL2CPP's managed-code stripper doesn't detect as "used" since nothing in our C# statically
+    references the types directly. Without this, CreatePrimitive silently fails to attach a
+    collider on-device (Editor never reproduces it — nothing is stripped there), which then
+    breaks anything with [RequireComponent(typeof(Collider))] and any physics-based hit
+    detection (Physics.OverlapSphere, trigger colliders on projectiles/ability VFX).
+  -->
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.BoxCollider" preserve="all" />
+    <type fullname="UnityEngine.SphereCollider" preserve="all" />
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+    <type fullname="UnityEngine.MeshCollider" preserve="all" />
+  </assembly>
+</linker>
