@@ -44,3 +44,6 @@ Read in order; each assumes the ones before it:
 - `CHANGELOG.md` — completed backlog items get moved here (napkin Backlog stays pending-only).
 - `sailors.md` / `.claude/plans/sailors.md` — original character-name/flavor brainstorm; tone reference only, not authoritative for mechanics.
 - Commit messages follow a strict global convention: short imperative title + 1-2 lines of context (the "why"). One commit per feature/fix, grouping all affected files.
+
+## Run this project
+emulator -avd Pixel_9_API_35
