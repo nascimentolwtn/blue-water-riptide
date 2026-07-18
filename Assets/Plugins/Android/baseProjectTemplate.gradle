@@ -5,7 +5,7 @@ plugins {
     // To specify a custom Gradle version in Unity, go do "Preferences > External Tools", uncheck "Gradle Installed with Unity (recommended)" and specify a path to a custom Gradle version
     id 'com.android.application' version '9.0.0' apply false
     id 'com.android.library' version '9.0.0' apply false
-    **BUILD_SCRIPT_DEPS**
+    // **BUILD_SCRIPT_DEPS**
 }
 
 tasks.register('clean', Delete) {

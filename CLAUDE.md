@@ -2,9 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project status: pre-implementation
+## Project status: environment ready, gameplay code not started
 
-This repo currently contains **only Unity project scaffolding and design docs — no C# code exists yet** (`Assets/**` folders are empty placeholders, `Packages/manifest.json` lists intended dependencies, `ProjectSettings/` is not yet generated). There are no build, lint, or test commands to run until the folder has been opened as a project in Unity Hub (Unity 2022 LTS+) and code has been written.
+The Unity project is bootstrapped and confirmed building/running on Android (emulator-verified) — but **no gameplay C# code exists yet**; `Assets/Scripts/**` folders are still empty. See `CHANGELOG.md` for what's been verified working and `.claude/napkin.md` for the environment gotchas encountered.
+
+**Confirmed environment**: Unity 6000.5.4f1 LTS, Android Build Support, IL2CPP scripting backend, ARM64 target, URP, Input System (New) as the sole active handler. Min API 30 / Target API 34+ (see `.claude/napkin.md` Platform & Device Constraints for the target device list). A custom base Gradle template (`Assets/Plugins/Android/baseProjectTemplate.gradle`) forces `kotlin-stdlib` to 1.8.22 and excludes the old `kotlin-stdlib-jdk7`/`jdk8` artifacts to avoid a duplicate-class Gradle failure. **Optimized Frame Pacing is disabled** (Player Settings → Android → Resolution and Presentation) — leaving it on crashes with SIGABRT inside Swappy's Vulkan init path on emulator.
+
+**Build & run**: open the repo folder as a project in Unity Hub, then `File → Build And Run` (deploys to whatever's visible in `adb devices`). There is no command-line/CI build script yet and no automated test suite — both are future backlog items, not yet implemented.
 
 The authoritative source for what to build is `.claude/plans/`, not this file — read the relevant plan doc(s) before writing any code in an area.
 
@@ -39,4 +43,4 @@ Read in order; each assumes the ones before it:
 - `.claude/napkin.md` — curated cross-session guardrails and a capped Backlog list of pending implementation work; read it at the start of a session.
 - `CHANGELOG.md` — completed backlog items get moved here (napkin Backlog stays pending-only).
 - `sailors.md` / `.claude/plans/sailors.md` — original character-name/flavor brainstorm; tone reference only, not authoritative for mechanics.
-- Commit messages follow a strict global convention: `type: subject` only — no body, no period. One commit per feature/fix, grouping all affected files.
+- Commit messages follow a strict global convention: short imperative title + 1-2 lines of context (the "why"). One commit per feature/fix, grouping all affected files.
