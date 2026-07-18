@@ -62,6 +62,8 @@ Keep `Assets/Scripts/Networking/` empty in this phase — nothing SP-specific ma
 
 ## 5. Milestones
 
+**Implementation status (2026-07-18):** an out-of-order, code-only slice of M1+M2 exists in `Assets/Scripts/{Core,Characters,Gameplay,AI}` via `M1PrototypeBootstrap` (procedurally spawns everything at runtime — no scenes/prefabs authored). Ace *and* Anchor are both playable already (M2 pulled forward to prove the ability framework early, per its own stated reason below), but several M1 exit criteria are still unmet: input is keyboard/mouse, not touch; verified in the Unity Editor only, not on-device Android; the arena is a flat plane, not Tideline Cove's real geometry; rounds/timer/sudden death aren't implemented; the opponent is a stationary `DummyAIInputDriver`, not real utility AI. Treat this as a step ahead of the milestone checklist below, not a completed M1.
+
 **M1 — Greybox vertical slice (the "is it fun" gate)**
 - Tideline Cove greybox (primitive shapes), Ace only, human + 1 dummy AI opponent (stands and shoots).
 - Movement, touch controls (joystick + tap/drag attack), straight projectiles, damage, KO, single-round Sink or Swim (no rounds/timer yet).
