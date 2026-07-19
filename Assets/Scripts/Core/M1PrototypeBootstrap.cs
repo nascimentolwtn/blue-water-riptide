@@ -48,7 +48,13 @@ namespace BlueWaterRiptide.Core
                 var session = new Session("sink-or-swim", "prototype", participants);
                 var matchController = new MatchController(session, MatchRules.M1Defaults);
 
-                var playerDriver = new KeyboardMouseInputDriver(playerGo.transform, cam);
+                // Touch is this project's real control scheme (Plan 01 §1) and what actually
+                // works on Android (no reliable mouse/hardware-keyboard device there — see
+                // napkin Execution & Validation). Keyboard/mouse stays available for quick
+                // iteration when testing in the Editor.
+                IInputDriver playerDriver = Application.isEditor
+                    ? new KeyboardMouseInputDriver(playerGo.transform, cam)
+                    : new TouchInputDriver();
                 var enemyDriver = new DummyAIInputDriver(enemyGo.transform, playerGo.transform, enemyDefinition.AttackRange);
 
                 playerPawn.Initialize(new ParticipantId(0), Team.A, playerDefinition, playerDriver, matchController);
@@ -61,6 +67,7 @@ namespace BlueWaterRiptide.Core
 
                 var hud = root.AddComponent<M1Hud>();
                 hud.Initialize(playerPawn, enemyPawn, matchController);
+                if (!Application.isEditor) root.AddComponent<TouchHud>();
             }
             catch (System.Exception e)
             {
