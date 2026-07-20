@@ -15,15 +15,24 @@ namespace BlueWaterRiptide.Core
         SailorPawn _enemy;
         string _resultText = "";
 
+        int _currentRound = 0;
+        bool _suddenDeathActive = false;
+        MatchController _matchController;
+
         public void Initialize(SailorPawn player, SailorPawn enemy, MatchController matchController)
         {
             _player = player;
             _enemy = enemy;
+            _matchController = matchController;
 
             matchController.OnMatchEnd += winner =>
             {
                 _resultText = winner == Team.A ? "YOU WIN" : "YOU LOSE";
             };
+
+            matchController.OnRoundCountdownStart += round => _currentRound = round;
+            matchController.OnSuddenDeathStart += () => _suddenDeathActive = true;
+            matchController.OnRoundEnd += winner => _suddenDeathActive = false;
         }
 
         void Update()
@@ -54,6 +63,31 @@ namespace BlueWaterRiptide.Core
                 : "Tap SUPER zone (top-right) when charged";
             GUI.Label(new Rect(20, 60, 260, 20), controlsHint);
             GUI.Label(new Rect(20, 78, 260, 20), superHint);
+
+            if (_currentRound > 0)
+            {
+                var roundStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+                GUI.Label(new Rect(Screen.width / 2f - 60, 10, 120, 30), $"Round {_currentRound}", roundStyle);
+            }
+
+            if (_suddenDeathActive)
+            {
+                var warningStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 24,
+                    alignment = TextAnchor.MiddleCenter,
+                    fontStyle = FontStyle.Bold,
+                    normal = { textColor = Color.red }
+                };
+                var bannerRect = new Rect(Screen.width / 2f - 260, 46, 520, 34);
+                GUI.Label(bannerRect, "⚠ SUDDEN DEATH - SAFE ZONE SHRINKING ⚠", warningStyle);
+
+                if (_matchController != null)
+                {
+                    var elapsedStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter, normal = { textColor = Color.red } };
+                    GUI.Label(new Rect(Screen.width / 2f - 100, 78, 200, 20), $"{_matchController.SuddenDeathElapsed:F0}s in the ring", elapsedStyle);
+                }
+            }
 
             if (!string.IsNullOrEmpty(_resultText))
             {
