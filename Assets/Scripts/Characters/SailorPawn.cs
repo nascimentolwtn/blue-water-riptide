@@ -21,6 +21,10 @@ namespace BlueWaterRiptide.Characters
         public bool IsKnockedOut { get; private set; }
         public float SuperCharge01 { get; private set; }
 
+        /// <summary>Seconds of no-damage grace ResetForRound grants after placing this Sailor at a spawn pad. Set by the host from ArenaDefinition.</summary>
+        public float SpawnImmunityDuration = 1.5f;
+        public bool IsSpawnImmune => _spawnImmunityTimer > 0f;
+
         public Vector2 ArenaHalfExtents = new Vector2(1000f, 1000f);
 
         const float FireCooldownDuration = 0.35f;
@@ -35,6 +39,7 @@ namespace BlueWaterRiptide.Characters
         Vector3 _knockbackVelocity;
         float _damageReductionFraction;
         float _damageReductionTimer;
+        float _spawnImmunityTimer;
 
         public void Initialize(ParticipantId id, Team team, SailorDefinitionData definition, IInputDriver driver, MatchController matchController)
         {
@@ -58,7 +63,7 @@ namespace BlueWaterRiptide.Characters
 
         public void ApplyDamage(float amount, ParticipantId source)
         {
-            if (IsKnockedOut) return;
+            if (IsKnockedOut || IsSpawnImmune) return;
 
             float mitigated = _damageReductionTimer > 0f ? amount * (1f - _damageReductionFraction) : amount;
             CurrentHP -= mitigated;
@@ -100,12 +105,52 @@ namespace BlueWaterRiptide.Characters
             _damageReductionTimer = duration;
         }
 
+        /// <summary>
+        /// Resets this Sailor for a fresh round (MatchController.OnRoundCountdownStart): full HP/ammo,
+        /// re-enabled collider/renderer, cleared knockout, Super charge carried over at
+        /// superRetainFraction (00 §1's round-reset rule: 0% into round 1, 50% into round 2+), and a
+        /// brief spawn-immunity window. The immunity timer is a plain countdown decremented by
+        /// Time.deltaTime each Update — a duration relative to when this call happens, not a stored
+        /// wall-clock timestamp, so it stays correct regardless of when in the match it's granted.
+        /// </summary>
+        public void ResetForRound(Vector3 spawnPosition, float superRetainFraction)
+        {
+            transform.position = spawnPosition;
+
+            if (Definition != null)
+            {
+                CurrentHP = Definition.MaxHP;
+                CurrentAmmo = Definition.MaxAmmo;
+            }
+
+            IsKnockedOut = false;
+            _reloadTimer = 0f;
+            _fireCooldownTimer = 0f;
+            _knockbackVelocity = Vector3.zero;
+            _damageReductionFraction = 0f;
+            _damageReductionTimer = 0f;
+
+            _superCharge *= Mathf.Clamp01(superRetainFraction);
+            SuperCharge01 = (Definition != null && Definition.SuperChargeThreshold > 0f)
+                ? _superCharge / Definition.SuperChargeThreshold
+                : 0f;
+
+            var collider = GetComponent<Collider>();
+            if (collider != null) collider.enabled = true;
+
+            var renderer = GetComponent<Renderer>();
+            if (renderer != null) renderer.enabled = true;
+
+            _spawnImmunityTimer = SpawnImmunityDuration;
+        }
+
         void Update()
         {
             if (IsKnockedOut) return;
 
             // Timers that run regardless of driver availability
             if (_damageReductionTimer > 0f) _damageReductionTimer -= Time.deltaTime;
+            if (_spawnImmunityTimer > 0f) _spawnImmunityTimer -= Time.deltaTime;
 
             if (_driver == null || Definition == null) return;
 

@@ -27,15 +27,17 @@ namespace BlueWaterRiptide.Core
             {
                 var root = new GameObject("M1Prototype");
 
+                var arena = ArenaCatalog.Default;
+
                 BuildLighting();
-                BuildGround(root.transform, out Vector2 halfExtents);
+                BuildGround(root.transform);
                 var cam = BuildCamera();
 
                 var playerDefinition = SailorDefinitionData.AdmiralAnchor;
                 var enemyDefinition = SailorDefinitionData.EnsignAce;
 
-                var playerGo = BuildPawnObject(root.transform, "Player_Anchor", new Vector3(-8f, 1f, 0f), Color.blue);
-                var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", new Vector3(8f, 1f, 0f), Color.red);
+                var playerGo = BuildPawnObject(root.transform, "Player_Anchor", arena.SpawnPositionsTeamA[0], Color.blue);
+                var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", arena.SpawnPositionsTeamB[0], Color.red);
 
                 var playerPawn = playerGo.AddComponent<SailorPawn>();
                 var enemyPawn = enemyGo.AddComponent<SailorPawn>();
@@ -45,8 +47,8 @@ namespace BlueWaterRiptide.Core
                     new ParticipantInfo(new ParticipantId(0), Team.A, DriverType.Human, playerDefinition.Id),
                     new ParticipantInfo(new ParticipantId(1), Team.B, DriverType.AI, enemyDefinition.Id),
                 };
-                var session = new Session("sink-or-swim", "prototype", participants);
-                var matchController = new MatchController(session, MatchRules.M1Defaults);
+                var session = new Session("sink-or-swim", arena.Id, participants);
+                var matchController = new MatchController(session, MatchRules.SinkOrSwimDefaults);
 
                 // Touch is this project's real control scheme (Plan 01 §1) and what actually
                 // works on Android (no reliable mouse/hardware-keyboard device there — see
@@ -60,14 +62,22 @@ namespace BlueWaterRiptide.Core
                 playerPawn.Initialize(new ParticipantId(0), Team.A, playerDefinition, playerDriver, matchController);
                 enemyPawn.Initialize(new ParticipantId(1), Team.B, enemyDefinition, enemyDriver, matchController);
 
-                playerPawn.ArenaHalfExtents = halfExtents;
-                enemyPawn.ArenaHalfExtents = halfExtents;
+                playerPawn.ArenaHalfExtents = arena.HalfExtents;
+                enemyPawn.ArenaHalfExtents = arena.HalfExtents;
+
+                // MatchLoopHost must subscribe to OnRoundCountdownStart before StartMatch() fires
+                // round 1's countdown, so pawns get their spawn-immunity window from round 1 onward too.
+                var loopHost = root.AddComponent<MatchLoopHost>();
+                loopHost.Initialize(matchController, playerPawn, enemyPawn, arena, matchController.Rules);
 
                 matchController.StartMatch();
 
                 var hud = root.AddComponent<M1Hud>();
                 hud.Initialize(playerPawn, enemyPawn, matchController);
                 if (!Application.isEditor) root.AddComponent<TouchHud>();
+
+                var profile = SaveService.Load();
+                Debug.Log($"BWR_SAVE: profile '{profile.profileId}' ready — displayName={profile.displayName}, doubloons={profile.doubloons}, sailors={profile.sailors.Count}");
             }
             catch (System.Exception e)
             {
@@ -92,16 +102,14 @@ namespace BlueWaterRiptide.Core
             light.intensity = 1.2f;
         }
 
-        static void BuildGround(Transform parent, out Vector2 halfExtents)
+        static void BuildGround(Transform parent)
         {
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Ground";
             ground.transform.SetParent(parent);
             ground.transform.position = Vector3.zero;
-            ground.transform.localScale = new Vector3(3.4f, 1f, 2f); // Unity Plane default 10x10 -> ~34x20 (Tideline Cove's footprint)
+            ground.transform.localScale = new Vector3(3.4f, 1f, 2f); // Unity Plane default 10x10 -> ~34x20 (Tideline Cove's footprint; ArenaCatalog's 16.5x9.5 half-extents are inset from this)
             ground.GetComponent<Renderer>().material = SailorPawn.CreateUrpMaterial(new Color(0.2f, 0.45f, 0.65f));
-
-            halfExtents = new Vector2(16.5f, 9.5f); // inset from the plane edges so pawns can't walk off
         }
 
         static Camera BuildCamera()
