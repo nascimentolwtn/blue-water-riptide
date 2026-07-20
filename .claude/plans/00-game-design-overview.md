@@ -74,7 +74,7 @@ Framework check: Ace vs Anchor covers ranged vs melee, burst vs single heavy hit
 
 ## 4. Content Roadmap (post-v1 expansion path)
 
-**Roster Roadmap.** Ace and Anchor are the vertical-slice roster. The rest of `sailors.md`'s squadron structure is the planned expansion path, added in small batches with no framework changes (new Sailor = new `SailorDefinition` + prefab + ability data):
+**Roster Roadmap.** Ace and Anchor are the vertical-slice roster. The rest of `docs/sailors.md`'s squadron structure is the planned expansion path, added in small batches with no framework changes (new Sailor = new `SailorDefinition` + prefab + ability data):
 - **The Blue Water Squad** (navy discipline — balanced/tactical): next up **Captain Cove** (controller — wall-spawning `Block` Super) and **Sailor Smash** (bruiser); **Deep Blue** reserved as the first Legendary (delayed-strike `Lob` artillery).
 - **The Riptide Rush** (fast, aggressive): next up **Riptide Rookie** (Common skirmisher — good early-unlock candidate) and **Surge Serve** (long-range marksman); later **Foam Flier** (assassin), **Stormy Spike** (ramping damage).
 - **The Anchor Guard** (defensive): next up **Tide Turner** (Common support — first healer, exercises the `Set` archetype) and **Coral Claw** (defensive specialist).

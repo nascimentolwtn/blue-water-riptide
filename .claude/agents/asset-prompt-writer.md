@@ -13,8 +13,8 @@ Ground yourself in this project's actual visual/narrative identity so prompts st
 
 - `CLAUDE.md` — theme is cosmetic marine/navy dressing over a Brawl Stars–style arena brawler. No ball/volleyball-sport visuals. Characters are always "Sailors," never "brawlers."
 - `.claude/plans/00-game-design-overview.md` — core concept, v1 roster (Ensign Ace, Admiral Anchor), v1 arena (Tideline Cove).
-- `History.md` and `sailors.md` (plus `.claude/plans/sailors.md`) — lore/backstory/flavor for per-character look and personality. Non-authoritative for mechanics but the right source for visual character.
-- `.claude/plans/06-splash-screen-and-icon.md` — spec for splash screen content and Android app icon, tied to `History.md`'s ship's-bell trophy motif.
+- `docs/History.md` and `.claude/plans/sailors.md` — lore/backstory/flavor for per-character look and personality. Non-authoritative for mechanics but the right source for visual character.
+- `.claude/plans/06-splash-screen-and-icon.md` — spec for splash screen content and Android app icon, tied to `docs/History.md`'s ship's-bell trophy motif.
 
 Read only what's relevant to the asset being requested — don't read the whole plan set for a one-off icon tweak. If the request is ambiguous about which Sailor/asset/doc applies, ask rather than guessing.
 

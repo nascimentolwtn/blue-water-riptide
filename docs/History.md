@@ -2,7 +2,7 @@
 
 [🇺🇸 English](History.md) · [🇧🇷 Português](History.pt-BR.md)
 
-Narrative/flavor doc only. It gives players a reason to care about a Sailor or squadron before picking one — it does not add, change, or imply any new mechanics, stats, modes, or content scope. **v1 remains exactly 2 playable Sailors (Ensign Ace, Admiral Anchor) and 1 arena (Tideline Cove)**; everything else here is flavor for the roadmap roster named in [`.claude/plans/00-game-design-overview.md`](.claude/plans/00-game-design-overview.md) §4, written so it's ready to drop in when those Sailors actually ship. As with the rest of the plans: the marine/navy/volleyball theme is cosmetic. Knockouts are competitive-arena knockouts — a Sailor who's "out" spectates the rest of the round, nothing worse. No ball, no scoring zones, no real warfare.
+Narrative/flavor doc only. It gives players a reason to care about a Sailor or squadron before picking one — it does not add, change, or imply any new mechanics, stats, modes, or content scope. **v1 remains exactly 2 playable Sailors (Ensign Ace, Admiral Anchor) and 1 arena (Tideline Cove)**; everything else here is flavor for the roadmap roster named in [`.claude/plans/00-game-design-overview.md`](../.claude/plans/00-game-design-overview.md) §4, written so it's ready to drop in when those Sailors actually ship. As with the rest of the plans: the marine/navy/volleyball theme is cosmetic. Knockouts are competitive-arena knockouts — a Sailor who's "out" spectates the rest of the round, nothing worse. No ball, no scoring zones, no real warfare.
 
 ## 1. World premise: the Tideline Cup
 
@@ -44,7 +44,7 @@ They're on friendly, respectful terms with Blue Water (two disciplined outfits r
 
 ## 3. Per-character hooks
 
-Two of these Sailors (Ensign Ace, Admiral Anchor) are live in v1. The rest are roadmap content from [`.claude/plans/00-game-design-overview.md`](.claude/plans/00-game-design-overview.md) §4 — not currently playable — written here so their personalities are locked in ahead of time.
+Two of these Sailors (Ensign Ace, Admiral Anchor) are live in v1. The rest are roadmap content from [`.claude/plans/00-game-design-overview.md`](../.claude/plans/00-game-design-overview.md) §4 — not currently playable — written here so their personalities are locked in ahead of time.
 
 ### The Blue Water Squad
 

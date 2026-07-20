@@ -25,7 +25,7 @@ Read in order; each assumes the ones before it:
 - `03-online-mode-future.md` — deferred internet lobby/matchmaking; lighter detail, includes a "do this now" checklist for keeping modes 1-2 online-ready.
 - `04-menu-navigation-lobby.md` — full screen flow (Home → Mode Select → per-mode lobby → Match → Results), `UIStateController` nav stack.
 - `05-gamification-trophies-ranking.md` — Fleet Rank (cosmetic ship-class tiers from account trophy total), leaderboard scoping, save schema.
-- `06-splash-screen-and-icon.md` — Boot-scene splash content and Android app icon spec, tied to `History.md`'s ship's-bell trophy motif; flags the unconfirmed Unity Personal/Pro tier as a dependency.
+- `06-splash-screen-and-icon.md` — Boot-scene splash content and Android app icon spec, tied to `docs/History.md`'s ship's-bell trophy motif; flags the unconfirmed Unity Personal/Pro tier as a dependency.
 
 ## Architecture (from the plans — build to this shape)
 
@@ -43,10 +43,32 @@ Read in order; each assumes the ones before it:
 
 - `.claude/napkin.md` — curated cross-session guardrails and a capped Backlog list of pending implementation work; read it at the start of a session.
 - `CHANGELOG.md` — completed backlog items get moved here (napkin Backlog stays pending-only).
-- `sailors.md` / `.claude/plans/sailors.md` — original character-name/flavor brainstorm; tone reference only, not authoritative for mechanics.
-- `History.md` — world/squadron/character lore (the Tideline Cup premise, the three squadrons, per-Sailor backstory hooks); narrative/flavor only, same non-authoritative status as `sailors.md`. Linked from `README.md`; not yet surfaced in-game (planned for a future menu/character-select screen).
-- pt-BR translations exist for `README.md`, `History.md`, and `.claude/plans/sailors.md` as sibling `*.pt-BR.md` files, each with a language-switcher link at the top. Keep them in sync if the English originals change meaningfully — they're not auto-regenerated.
+- `docs/sailors.md` — original character-name/flavor brainstorm; tone reference only, not authoritative for mechanics.
+- `docs/History.md` — world/squadron/character lore (the Tideline Cup premise, the three squadrons, per-Sailor backstory hooks); narrative/flavor only, same non-authoritative status as `docs/sailors.md`. Linked from `README.md`; not yet surfaced in-game (planned for a future menu/character-select screen).
+- pt-BR translations exist for `README.md`, `docs/History.md`, and `.docs/sailors.md` as sibling `*.pt-BR.md` files, each with a language-switcher link at the top. Keep them in sync if the English originals change meaningfully — they're not auto-regenerated.
 - Commit messages follow a strict global convention: short imperative title + 1-2 lines of context (the "why"). One commit per feature/fix, grouping all affected files.
 
-## Run this project
-emulator -avd Pixel_9_API_35
+## Useful command lines
+
+**Emulator**
+- `emulator -avd Pixel_9_API_35` — Start the Android emulator
+- `emulator -kill-all` — Kill all running emulator instances
+- `emulator -avd Pixel_9_API_35 -wipe-data` — Start emulator and wipe data (fresh state)
+
+**ADB & Installation**
+- `adb devices` — List connected devices/emulator
+- `adb install -r build/android/app-release.aab` — Install/reinstall the APK (after building)
+- `adb uninstall com.BlueWaterRiptide.BlueWaterRiptide` — Uninstall the app
+- `adb shell pm clear com.BlueWaterRiptide.BlueWaterRiptide` — Clear app data (cache/prefs)
+
+**Logs & Debugging**
+- `adb logcat` — Stream device logs (Ctrl+C to stop)
+- `adb logcat -c` — Clear logcat buffer
+- `adb logcat | grep -i "unity\|exception\|error"` — Filter for Unity/errors
+
+**Build & Deploy** (from command line)
+- `cd Assets/Editor/BuildTools && mono BuildScript.cs` — Headless build (if configured)
+- `adb push <file> /sdcard/Download/` — Push file to device
+
+**Device Interaction**
+- `adb shell am start -n com.BlueWaterRiptide.BlueWaterRiptide/.MainActivity` — Launch app

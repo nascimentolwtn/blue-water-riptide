@@ -2,7 +2,7 @@
 
 [🇧🇷 Português](History.pt-BR.md) · [🇺🇸 English](History.md)
 
-Este é apenas um documento narrativo/de ambientação. Ele dá aos jogadores um motivo para torcer por um Marinheiro ou esquadrão antes de escolher — ele não adiciona, altera ou sugere nenhuma mecânica, atributo, modo ou escopo de conteúdo novo. **A v1 continua com exatamente 2 Marinheiros jogáveis (Ensign Ace, Admiral Anchor) e 1 arena (Tideline Cove)**; tudo o mais aqui é ambientação para o elenco do roadmap listado em [`.claude/plans/00-game-design-overview.md`](.claude/plans/00-game-design-overview.md) §4, escrito para já estar pronto quando esses Marinheiros forem lançados de fato. Assim como no restante dos planos: o tema marinho/naval/vôlei é puramente cosmético. Os nocautes são nocautes de arena competitiva — um Marinheiro que é "eliminado" apenas assiste ao resto da rodada como espectador, nada além disso. Sem bola, sem zonas de pontuação, sem guerra de verdade.
+Este é apenas um documento narrativo/de ambientação. Ele dá aos jogadores um motivo para torcer por um Marinheiro ou esquadrão antes de escolher — ele não adiciona, altera ou sugere nenhuma mecânica, atributo, modo ou escopo de conteúdo novo. **A v1 continua com exatamente 2 Marinheiros jogáveis (Ensign Ace, Admiral Anchor) e 1 arena (Tideline Cove)**; tudo o mais aqui é ambientação para o elenco do roadmap listado em [`.claude/plans/00-game-design-overview.md`](../.claude/plans/00-game-design-overview.md) §4, escrito para já estar pronto quando esses Marinheiros forem lançados de fato. Assim como no restante dos planos: o tema marinho/naval/vôlei é puramente cosmético. Os nocautes são nocautes de arena competitiva — um Marinheiro que é "eliminado" apenas assiste ao resto da rodada como espectador, nada além disso. Sem bola, sem zonas de pontuação, sem guerra de verdade.
 
 ## 1. Premissa do universo: a Tideline Cup
 
@@ -44,7 +44,7 @@ Eles mantêm uma relação amistosa e respeitosa com o Blue Water (duas tropas d
 
 ## 3. Ganchos por personagem
 
-Dois desses Marinheiros (Ensign Ace, Admiral Anchor) já estão ativos na v1. O restante é conteúdo do roadmap listado em [`.claude/plans/00-game-design-overview.md`](.claude/plans/00-game-design-overview.md) §4 — ainda não jogável — descrito aqui para que suas personalidades já fiquem definidas com antecedência.
+Dois desses Marinheiros (Ensign Ace, Admiral Anchor) já estão ativos na v1. O restante é conteúdo do roadmap listado em [`.claude/plans/00-game-design-overview.md`](../.claude/plans/00-game-design-overview.md) §4 — ainda não jogável — descrito aqui para que suas personalidades já fiquem definidas com antecedência.
 
 ### The Blue Water Squad
 

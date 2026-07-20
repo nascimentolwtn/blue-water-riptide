@@ -2,9 +2,9 @@
 
 [🇧🇷 Português](README.pt-BR.md) · [🇺🇸 English](README.md)
 
-Um brawler de arena em equipe, com visão top-down, no estilo *Brawl Stars* — combate em equipe, ataque básico + Super carregável por personagem, condição de vitória por nocaute. A temática naval/marinha e de vôlei de praia é **apenas estética** (nomes de personagens, nomes de ataques, arte, ambientação da arena) — não há bola, não há zonas de pontuação, não há regras de esporte. As sementes de elenco e lore estão em [`.claude/plans/sailors.md`](.claude/plans/sailors.md); veja [`.claude/plans/00-game-design-overview.md`](.claude/plans/00-game-design-overview.md) para o design autoritativo.
+Um brawler de arena em equipe, com visão top-down, no estilo *Brawl Stars* — combate em equipe, ataque básico + Super carregável por personagem, condição de vitória por nocaute. A temática naval/marinha e de vôlei de praia é **apenas estética** (nomes de personagens, nomes de ataques, arte, ambientação da arena) — não há bola, não há zonas de pontuação, não há regras de esporte. As sementes de elenco e lore estão em [`docs/sailors.md`](docs/sailors.md); veja [`.claude/plans/00-game-design-overview.md`](.claude/plans/00-game-design-overview.md) para o design autoritativo.
 
-Todo ano as frotas se reúnem em Tideline Cove para a **Tideline Cup** — um torneio amistoso e ferozmente competitivo em que três esquadrões (o disciplinado Blue Water Squad, o imprudente Riptide Rush e o inabalável Anchor Guard) comparecem para vencer. Veja [`History.md`](History.md) para o histórico completo do mundo, dos esquadrões e dos personagens.
+Todo ano as frotas se reúnem em Tideline Cove para a **Tideline Cup** — um torneio amistoso e ferozmente competitivo em que três esquadrões (o disciplinado Blue Water Squad, o imprudente Riptide Rush e o inabalável Anchor Guard) comparecem para vencer. Veja [`History.pt-BR.md`](docs/History.pt-BR.md) para o histórico completo do mundo, dos esquadrões e dos personagens.
 
 ## Engine e Plataformas-Alvo
 

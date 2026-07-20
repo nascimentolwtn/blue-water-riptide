@@ -20,9 +20,9 @@ No hand-authored art exists in the repo yet (`CLAUDE.md` project-status note; `0
 
 | Category | Sourced from |
 |---|---|
-| Character portraits &amp; pawns | `00-game-design-overview.md` §3 (roster), `01-single-player-mode.md` §4 (prefab layout), `History.md` §2–3 (squadron identity, per-character hooks), `.claude/plans/sailors.md` (name brainstorm, tone only) |
+| Character portraits &amp; pawns | `00-game-design-overview.md` §3 (roster), `01-single-player-mode.md` §4 (prefab layout), `docs/History.md` §2–3 (squadron identity, per-character hooks), `.claude/plans/sailors.md` (name brainstorm, tone only) |
 | App icon | `06-splash-screen-and-icon.md` §2 |
-| Splash art | `06-splash-screen-and-icon.md` §1, `History.md` §1 (Tideline Cup bell trophy) |
+| Splash art | `06-splash-screen-and-icon.md` §1, `docs/History.md` §1 (Tideline Cup bell trophy) |
 | Arena environment | `00-game-design-overview.md` §5 (Tideline Cove layout), `01-single-player-mode.md` §4 (`Assets/Prefabs/Environment/`) |
 | Projectiles/VFX | `00-game-design-overview.md` §3 (ability descriptions), `01-single-player-mode.md` §4 (`Assets/Prefabs/Projectiles/`) |
 | Meta/UI icons | `04-menu-navigation-lobby.md` §3 (Home/Locker/Voyage Road screens), `05-gamification-trophies-ranking.md` §2–4 (Fleet Rank tiers, Commendations) |
@@ -36,7 +36,7 @@ These are the two Sailors actually shipping in v1 (`00` §3) — highest priorit
 
 ### 1a. Ensign Ace
 
-Grounding: Starter rarity, Blue Water Squad ("Do it right, or do it again" — disciplined, proper uniforms even on the beach), youngest officer and the squad's top scorer, `Serve` archetype (ranged volleyball-serve attacks), Normal speed/1300 HP (not a heavy build), "constantly a half-step ahead of his own confidence" (`History.md` §3). Recommended palette: deep navy `#0E2A47` (the splash/icon navy, already established in `06` as Blue Water's identity color) with white and gold trim, since no character color palette is specified elsewhere in the docs.
+Grounding: Starter rarity, Blue Water Squad ("Do it right, or do it again" — disciplined, proper uniforms even on the beach), youngest officer and the squad's top scorer, `Serve` archetype (ranged volleyball-serve attacks), Normal speed/1300 HP (not a heavy build), "constantly a half-step ahead of his own confidence" (`docs/History.md` §3). Recommended palette: deep navy `#0E2A47` (the splash/icon navy, already established in `06` as Blue Water's identity color) with white and gold trim, since no character color palette is specified elsewhere in the docs.
 
 **Variant A — Action portrait, stylized 3D-render style (recommended default)**
 ```
@@ -48,11 +48,11 @@ A 3/4-view character portrait of a young, confident naval ensign on a tropical b
 A flat vector illustration portrait of a young naval ensign, bust-up 3/4 view, in a bold graphic mobile-game icon style (thick clean outlines, flat color fills, minimal shading — think modern flat-design app icons rather than painterly art). Navy-blue and white beach-sailor uniform with gold trim and ensign insignia, confident smirk, mid-serve pose with a volleyball just leaving his hand. Solid deep-navy (#0E2A47) or transparent background so the character silhouette pops.
 ```
 
-**Target**: Gemini | **Aspect/size**: square (1:1), min 1024x1024 for downscaling to Locker tile/portrait sizes | **Sources**: `00-game-design-overview.md` §3, `History.md` §2–3, `06-splash-screen-and-icon.md` (navy palette precedent)
+**Target**: Gemini | **Aspect/size**: square (1:1), min 1024x1024 for downscaling to Locker tile/portrait sizes | **Sources**: `00-game-design-overview.md` §3, `docs/History.md` §2–3, `06-splash-screen-and-icon.md` (navy palette precedent)
 
 ### 1b. Admiral Anchor
 
-Grounding: Rare rarity, Anchor Guard ("Nothing gets past us" — grew out of harbor-defense crews and lighthouse keepers), senior commander, "the closest thing the whole Cup has to an elder statesman," `Spike` archetype (close-range AOE ground pound), Slow speed/1900 HP tank, knockback-immune ("Ballast" trait), mentors younger Sailors across all three squadrons (`History.md` §3). No palette is specified for the Anchor Guard anywhere in the docs — I'm choosing a weathered steel-grey/harbor-teal with iron/rust accents specifically to contrast against Blue Water's navy blue, since the two squadrons need to read as visually distinct; flag for sign-off if a different squadron palette is preferred.
+Grounding: Rare rarity, Anchor Guard ("Nothing gets past us" — grew out of harbor-defense crews and lighthouse keepers), senior commander, "the closest thing the whole Cup has to an elder statesman," `Spike` archetype (close-range AOE ground pound), Slow speed/1900 HP tank, knockback-immune ("Ballast" trait), mentors younger Sailors across all three squadrons (`docs/History.md` §3). No palette is specified for the Anchor Guard anywhere in the docs — I'm choosing a weathered steel-grey/harbor-teal with iron/rust accents specifically to contrast against Blue Water's navy blue, since the two squadrons need to read as visually distinct; flag for sign-off if a different squadron palette is preferred.
 
 **Variant A — Action portrait, stylized 3D-render style (recommended default)**
 ```
@@ -64,7 +64,7 @@ A 3/4-view character portrait of a large, weathered, older naval officer in a st
 A flat vector illustration portrait of a large, grey-bearded naval officer, bust-up 3/4 view, in a bold graphic mobile-game icon style (thick clean outlines, flat color fills, minimal shading). Steel-grey and teal weathered coat with rust-orange trim, calm immovable expression, a massive anchor resting over one shoulder. Solid deep-navy (#0E2A47) or transparent background so the character silhouette pops, with enough color contrast against Ensign Ace's palette that the two read as different squadrons at a glance.
 ```
 
-**Target**: Gemini | **Aspect/size**: square (1:1), min 1024x1024 | **Sources**: `00-game-design-overview.md` §3, `History.md` §2–3
+**Target**: Gemini | **Aspect/size**: square (1:1), min 1024x1024 | **Sources**: `00-game-design-overview.md` §3, `docs/History.md` §2–3
 
 ### Duplicate-Sailor tinting note (`01-single-player-mode.md` §2)
 Duplicate Sailors on a team get "team-colored kerchiefs" for readability. This is a small in-engine tint/overlay applied to the base model, not a separate generated asset — no prompt needed unless the team later wants a hand-illustrated kerchief prop reference.
@@ -73,7 +73,7 @@ Duplicate Sailors on a team get "team-colored kerchiefs" for readability. This i
 
 ## 2. Character Portraits — Roadmap Roster
 
-Not needed for v1 (`00` §3 confirms exactly 2 playable Sailors), but `History.md` §3 locks in personalities for the full expansion roster ahead of time, and `00` §4 names the build order. Included here so concept art can get ahead of implementation. One variant each, same recommended default style as Ace/Anchor Variant A for roster consistency — reuse each squadron's palette (Blue Water = navy/white/gold; Anchor Guard = steel-grey/teal/rust; Riptide Rush has no established palette in any doc, so I'm proposing a bright energetic teal/orange/yellow "fast and loud" palette to contrast the other two disciplined squadrons — flag for sign-off).
+Not needed for v1 (`00` §3 confirms exactly 2 playable Sailors), but `docs/History.md` §3 locks in personalities for the full expansion roster ahead of time, and `00` §4 names the build order. Included here so concept art can get ahead of implementation. One variant each, same recommended default style as Ace/Anchor Variant A for roster consistency — reuse each squadron's palette (Blue Water = navy/white/gold; Anchor Guard = steel-grey/teal/rust; Riptide Rush has no established palette in any doc, so I'm proposing a bright energetic teal/orange/yellow "fast and loud" palette to contrast the other two disciplined squadrons — flag for sign-off).
 
 ### The Blue Water Squad (navy/white/gold palette)
 
@@ -126,7 +126,7 @@ A 3/4-view stylized 3D-render mobile-game portrait of a warm, capable quartermas
 A 3/4-view stylized 3D-render mobile-game portrait of a rugged salvage diver turned defensive specialist, steel-grey and teal Anchor Guard gear with sharp reef-hook attachments, weathered from reef and rock work, stubborn dig-in stance like he's claimed a piece of ground and dares anyone to take it. Clean cel-shading, blurred grey-ocean background, transparent-friendly crop.
 ```
 
-**Target**: Gemini | **Aspect/size**: square (1:1), min 1024x1024 | **Sources**: `00-game-design-overview.md` §4, `History.md` §2–3
+**Target**: Gemini | **Aspect/size**: square (1:1), min 1024x1024 | **Sources**: `00-game-design-overview.md` §4, `docs/History.md` §2–3
 
 ---
 
@@ -181,7 +181,7 @@ Fully specified in `06-splash-screen-and-icon.md` §1. Same bell mark as the ico
 A clean, flat, high-contrast logo mark: a barnacle-crusted bronze ship's bell, rendered with subtle weathered texture (light barnacle/verdigris detailing on the bell's surface, suggesting age and years at sea) and a small stylized wave crest curling beneath it, with a faint suggestion of netting rope looping around the base. The mark should be squadron-neutral — no team colors, no volleyball, no ball or net-as-sport-equipment imagery — just the bell as a trophy object with subtle nautical dressing. Centered composition, transparent background, bronze/gold bell tones against nothing (for placement over a solid deep-navy #0E2A47 background later). Style: clean vector-adjacent flat illustration with soft dimensional shading, no photorealism, reads clearly as a single unified mark at both large and small display sizes.
 ```
 
-**Target**: Gemini | **Aspect/size**: transparent PNG, bell mark centered within a 1920x1080 (16:9) safe area (export at 2x / 3840x2160 recommended per doc), landscape-only (this project locks landscape orientation) | **Sources**: `06-splash-screen-and-icon.md` §1, `History.md` §1
+**Target**: Gemini | **Aspect/size**: transparent PNG, bell mark centered within a 1920x1080 (16:9) safe area (export at 2x / 3840x2160 recommended per doc), landscape-only (this project locks landscape orientation) | **Sources**: `06-splash-screen-and-icon.md` §1, `docs/History.md` §1
 
 ---
 
