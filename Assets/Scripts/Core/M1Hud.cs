@@ -30,8 +30,13 @@ namespace BlueWaterRiptide.Core
         {
             if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                Restart();
             }
+        }
+
+        static void Restart()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         void OnGUI()
@@ -53,10 +58,15 @@ namespace BlueWaterRiptide.Core
             if (!string.IsNullOrEmpty(_resultText))
             {
                 var bannerStyle = new GUIStyle(GUI.skin.label) { fontSize = 40, alignment = TextAnchor.MiddleCenter };
-                var hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleCenter };
+                var buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 20 };
 
                 GUI.Label(new Rect(Screen.width / 2f - 200, Screen.height / 2f - 60, 400, 80), _resultText, bannerStyle);
-                GUI.Label(new Rect(Screen.width / 2f - 150, Screen.height / 2f + 30, 300, 30), "Press R to restart", hintStyle);
+
+                var restartRect = new Rect(Screen.width / 2f - 100, Screen.height / 2f + 30, 200, 50);
+                if (GUI.Button(restartRect, "Restart", buttonStyle))
+                {
+                    Restart();
+                }
             }
         }
     }
