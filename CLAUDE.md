@@ -25,6 +25,7 @@ Read in order; each assumes the ones before it:
 - `03-online-mode-future.md` — deferred internet lobby/matchmaking; lighter detail, includes a "do this now" checklist for keeping modes 1-2 online-ready.
 - `04-menu-navigation-lobby.md` — full screen flow (Home → Mode Select → per-mode lobby → Match → Results), `UIStateController` nav stack.
 - `05-gamification-trophies-ranking.md` — Fleet Rank (cosmetic ship-class tiers from account trophy total), leaderboard scoping, save schema.
+- `06-splash-screen-and-icon.md` — Boot-scene splash content and Android app icon spec, tied to `History.md`'s ship's-bell trophy motif; flags the unconfirmed Unity Personal/Pro tier as a dependency.
 
 ## Architecture (from the plans — build to this shape)
 
@@ -44,6 +45,7 @@ Read in order; each assumes the ones before it:
 - `CHANGELOG.md` — completed backlog items get moved here (napkin Backlog stays pending-only).
 - `sailors.md` / `.claude/plans/sailors.md` — original character-name/flavor brainstorm; tone reference only, not authoritative for mechanics.
 - `History.md` — world/squadron/character lore (the Tideline Cup premise, the three squadrons, per-Sailor backstory hooks); narrative/flavor only, same non-authoritative status as `sailors.md`. Linked from `README.md`; not yet surfaced in-game (planned for a future menu/character-select screen).
+- pt-BR translations exist for `README.md`, `History.md`, and `.claude/plans/sailors.md` as sibling `*.pt-BR.md` files, each with a language-switcher link at the top. Keep them in sync if the English originals change meaningfully — they're not auto-regenerated.
 - Commit messages follow a strict global convention: short imperative title + 1-2 lines of context (the "why"). One commit per feature/fix, grouping all affected files.
 
 ## Run this project

@@ -1,3 +1,5 @@
+[🇺🇸 English](sailors.md) · [🇧🇷 Português](sailors.pt-BR.md)
+
 ## Navy & Marine Inspired Names
 Ensign Ace – A young officer who serves as the team's top scorer.
 Riptide Rookie – A fresh recruit with high energy and fast spikes.
