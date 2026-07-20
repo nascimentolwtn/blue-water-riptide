@@ -43,6 +43,7 @@ Read in order; each assumes the ones before it:
 - `.claude/napkin.md` — curated cross-session guardrails and a capped Backlog list of pending implementation work; read it at the start of a session.
 - `CHANGELOG.md` — completed backlog items get moved here (napkin Backlog stays pending-only).
 - `sailors.md` / `.claude/plans/sailors.md` — original character-name/flavor brainstorm; tone reference only, not authoritative for mechanics.
+- `History.md` — world/squadron/character lore (the Tideline Cup premise, the three squadrons, per-Sailor backstory hooks); narrative/flavor only, same non-authoritative status as `sailors.md`. Linked from `README.md`; not yet surfaced in-game (planned for a future menu/character-select screen).
 - Commit messages follow a strict global convention: short imperative title + 1-2 lines of context (the "why"). One commit per feature/fix, grouping all affected files.
 
 ## Run this project
