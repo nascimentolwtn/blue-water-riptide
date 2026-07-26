@@ -180,8 +180,13 @@ namespace BlueWaterRiptide.Core
             }
 
             RoundNumber++;
+            // Deliberately never recurses into BeginRound() synchronously here, even when
+            // RoundResetDelay <= 0 — Tick()'s RoundEnd branch picks it up on the next call
+            // instead. Recursing in-line would let a second knockout reported later in the
+            // same call stack (e.g. from an AOE hit processed in a loop) land on the round
+            // that had just silently started, misattributing it and corrupting round-win
+            // bookkeeping.
             _roundResetRemaining = Rules.RoundResetDelay;
-            if (_roundResetRemaining <= 0f) BeginRound();
         }
     }
 }
