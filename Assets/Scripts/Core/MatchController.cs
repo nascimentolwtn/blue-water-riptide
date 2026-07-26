@@ -12,8 +12,10 @@ namespace BlueWaterRiptide.Core
     /// countdowns/timers, Tick also resolves any round-ending knockout(s) reported via
     /// ReportKnockout since the previous Tick call — resolution is deliberately deferred rather
     /// than handled inline, so multiple knockouts landing in the same frame (e.g. one AOE hit
-    /// wiping both teams' last member at once) are evaluated together instead of by whichever
-    /// order ReportKnockout happened to be called in.
+    /// wiping several stragglers at once) are evaluated together instead of by whichever order
+    /// ReportKnockout happened to be called in. A same-tick mutual kill (both teams reach zero
+    /// alive at once via attackers from each side) has no principled winner and replays the
+    /// round instead of picking one arbitrarily — see CheckSurvivors.
     /// </summary>
     public enum MatchState { Setup, RoundCountdown, Combat, RoundEnd, MatchEnd, Results }
 
@@ -40,7 +42,7 @@ namespace BlueWaterRiptide.Core
         float _suddenDeathRingRemaining;
         int _suddenDeathRingIndex;
         bool _survivorCheckPending;
-        ParticipantId? _lastKnockoutAttacker;
+        readonly HashSet<Team> _pendingBatchAttackerTeams = new HashSet<Team>();
 
         public event Action<ParticipantId> OnKnockout;
         /// <summary>Fired at the start of every round (including the first) before the countdown
@@ -102,7 +104,7 @@ namespace BlueWaterRiptide.Core
             if (!_knockedOut.Add(victim)) return;
 
             _knockoutsByAttacker[attacker] = _knockoutsByAttacker.TryGetValue(attacker, out int count) ? count + 1 : 1;
-            _lastKnockoutAttacker = attacker;
+            _pendingBatchAttackerTeams.Add(FindTeam(attacker));
             _survivorCheckPending = true;
 
             OnKnockout?.Invoke(victim);
@@ -114,7 +116,7 @@ namespace BlueWaterRiptide.Core
             InSuddenDeath = false;
             _suddenDeathRingIndex = 0;
             _survivorCheckPending = false;
-            _lastKnockoutAttacker = null;
+            _pendingBatchAttackerTeams.Clear();
 
             OnRoundReset?.Invoke(RoundNumber);
 
@@ -183,17 +185,34 @@ namespace BlueWaterRiptide.Core
 
         void CheckSurvivors()
         {
+            var attackerTeamsThisBatch = new HashSet<Team>(_pendingBatchAttackerTeams);
+            _pendingBatchAttackerTeams.Clear();
+
             int aliveA = CountAlive(Team.A);
             int aliveB = CountAlive(Team.B);
 
             if (aliveA > 0 && aliveB > 0) return;
 
-            if (aliveA == 0 && aliveB == 0 && _lastKnockoutAttacker.HasValue)
+            if (aliveA == 0 && aliveB == 0)
             {
-                // Simultaneous wipe (e.g. one AOE hit knocking out both teams' last member in the
-                // same batch): award the round to whichever team scored that final knockout,
-                // rather than the arbitrary "Team A alive? no -> Team B" fallback below.
-                EndRound(FindTeam(_lastKnockoutAttacker.Value));
+                // Simultaneous wipe. Since a team can only reach 0 alive via an enemy attacker
+                // (no friendly fire anywhere in Gameplay/Combat) and the round would already have
+                // ended the moment either team first hit 0, both teams going to 0 in the same
+                // batch is, under today's combat rules, always a genuine mutual kill — attackers
+                // from both teams each landing the other side's final blow in the same tick (e.g.
+                // two crossing projectiles). There's no principled winner to pick from that, and
+                // choosing one via "whichever knockout was reported last" would just relocate the
+                // original order-dependence bug one level down — so replay the round instead.
+                // The single-attacker-team branch below is unreachable while that invariant
+                // holds; kept as a defensive fallback in case a future hazard/ability ever credits
+                // a wipe without a cross-team attacker.
+                if (attackerTeamsThisBatch.Count == 1)
+                {
+                    EndRound(attackerTeamsThisBatch.First());
+                    return;
+                }
+
+                BeginRound();
                 return;
             }
 
