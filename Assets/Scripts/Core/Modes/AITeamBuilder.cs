@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BlueWaterRiptide.AI
+namespace BlueWaterRiptide.Core.Modes
 {
     /// <summary>One entry in the pool AITeamBuilder samples from. Deliberately just an id + a
     /// coarse role flag — AI code never hard-codes which specific Sailor is which (napkin

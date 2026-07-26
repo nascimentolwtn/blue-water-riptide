@@ -11,13 +11,16 @@ namespace BlueWaterRiptide.AI
         public readonly AIPerception Perception;
         public readonly AIBehaviorProfile Profile;
         public readonly AIDifficultyParams Difficulty;
+        /// <summary>Null for a solo AI (no squad, e.g. today's M1 1v1) — states must null-check.</summary>
+        public readonly AISquadIntent SquadIntent;
 
-        public AIContext(SailorPawn self, AIPerception perception, AIBehaviorProfile profile, AIDifficultyParams difficulty)
+        public AIContext(SailorPawn self, AIPerception perception, AIBehaviorProfile profile, AIDifficultyParams difficulty, AISquadIntent squadIntent = null)
         {
             Self = self;
             Perception = perception;
             Profile = profile;
             Difficulty = difficulty;
+            SquadIntent = squadIntent;
         }
     }
 

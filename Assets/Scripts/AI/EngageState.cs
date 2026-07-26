@@ -17,7 +17,7 @@ namespace BlueWaterRiptide.AI
 
         public float Score(in AIContext ctx)
         {
-            if (ctx.Perception.GetNearestEnemy() == null) return 0f;
+            if (SelectTarget(ctx) == null) return 0f;
             if (ctx.Self.CurrentAmmo < ctx.Profile.MinAmmoToEngage) return 0f;
             if (ctx.Self.HpFraction <= ctx.Profile.RetreatHpFraction) return 0.1f; // Retreat should outscore this
             return 0.6f;
@@ -25,12 +25,12 @@ namespace BlueWaterRiptide.AI
 
         public InputCommand Produce(in AIContext ctx, double time)
         {
-            var nearest = ctx.Perception.GetNearestEnemy();
-            if (nearest == null) return InputCommand.None(time);
+            var selected = SelectTarget(ctx);
+            if (selected == null) return InputCommand.None(time);
 
             SailorPawn self = ctx.Self;
-            SailorPawn target = nearest.Value.Pawn;
-            float distance = nearest.Value.Distance;
+            SailorPawn target = selected.Value.Pawn;
+            float distance = selected.Value.Distance;
 
             Vector3 toTarget = target.transform.position - self.transform.position;
             toTarget.y = 0f;
@@ -77,6 +77,22 @@ namespace BlueWaterRiptide.AI
             float cos = Mathf.Cos(radians);
             float sin = Mathf.Sin(radians);
             return new Vector2(aim.x * cos - aim.y * sin, aim.x * sin + aim.y * cos);
+        }
+
+        /// <summary>Prefers the squad's focus-fire suggestion when it's currently visible,
+        /// otherwise falls back to the nearest visible enemy. Null SquadIntent (solo AI, e.g.
+        /// today's M1 1v1) always falls back.</summary>
+        static PerceivedPawn? SelectTarget(in AIContext ctx)
+        {
+            if (ctx.SquadIntent?.FocusFireTargetId is ParticipantId focusId)
+            {
+                foreach (var enemy in ctx.Perception.GetVisibleEnemies())
+                {
+                    if (enemy.Pawn.Id == focusId) return enemy;
+                }
+            }
+
+            return ctx.Perception.GetNearestEnemy();
         }
 
         static bool ShouldUseSuper(in AIContext ctx, SailorPawn target, float distance, float preferredRange)

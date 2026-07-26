@@ -18,6 +18,7 @@ namespace BlueWaterRiptide.AI
         readonly AIPerception _perception;
         readonly AIBehaviorProfile _profile;
         readonly AIDifficultyParams _difficulty;
+        readonly AISquadBrain _squadBrain;
         readonly IAIState[] _states;
 
         IAIState _currentState;
@@ -27,12 +28,14 @@ namespace BlueWaterRiptide.AI
         ParticipantId? _lastTargetId;
         double _targetAcquiredTime;
 
-        public AIInputDriver(SailorPawn self, AIPerception perception, AIBehaviorProfile profile, AIDifficultyParams difficulty)
+        /// <summary>squadBrain is optional — null for a solo AI (e.g. today's M1 1v1).</summary>
+        public AIInputDriver(SailorPawn self, AIPerception perception, AIBehaviorProfile profile, AIDifficultyParams difficulty, AISquadBrain squadBrain = null)
         {
             _self = self;
             _perception = perception;
             _profile = profile;
             _difficulty = difficulty;
+            _squadBrain = squadBrain;
             _states = new IAIState[] { new EngageState(), new RetreatState(), new RegroupState() };
             _currentState = _states[0];
         }
@@ -41,7 +44,7 @@ namespace BlueWaterRiptide.AI
         {
             if (_self == null || _self.IsKnockedOut) return InputCommand.None(time);
 
-            var ctx = new AIContext(_self, _perception, _profile, _difficulty);
+            var ctx = new AIContext(_self, _perception, _profile, _difficulty, _squadBrain?.Intent);
 
             if (time - _lastDecisionTime >= DecisionInterval)
             {
