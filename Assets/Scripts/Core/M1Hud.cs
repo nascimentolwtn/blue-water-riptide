@@ -13,12 +13,14 @@ namespace BlueWaterRiptide.Core
     {
         SailorPawn _player;
         SailorPawn _enemy;
+        MatchController _matchController;
         string _resultText = "";
 
         public void Initialize(SailorPawn player, SailorPawn enemy, MatchController matchController)
         {
             _player = player;
             _enemy = enemy;
+            _matchController = matchController;
 
             matchController.OnMatchEnd += winner =>
             {
@@ -28,6 +30,8 @@ namespace BlueWaterRiptide.Core
 
         void Update()
         {
+            _matchController?.Tick(Time.deltaTime);
+
             if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             {
                 Restart();

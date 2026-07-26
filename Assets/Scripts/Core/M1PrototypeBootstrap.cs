@@ -45,7 +45,7 @@ namespace BlueWaterRiptide.Core
                     new ParticipantInfo(new ParticipantId(0), Team.A, DriverType.Human, playerDefinition.Id),
                     new ParticipantInfo(new ParticipantId(1), Team.B, DriverType.AI, enemyDefinition.Id),
                 };
-                var session = new Session("sink-or-swim", "prototype", participants);
+                var session = new Session("sink-or-swim", ArenaCatalog.Default.Id, participants);
                 var matchController = new MatchController(session, MatchRules.M1Defaults);
 
                 // Touch is this project's real control scheme (Plan 01 §1) and what actually
