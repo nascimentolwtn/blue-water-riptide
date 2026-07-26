@@ -4,6 +4,8 @@ Completed backlog items move here from `.claude/napkin.md`'s Backlog category, m
 
 ## Unreleased
 
+- **[2026-07-26] Single Player AI: data/pure-logic layer (`AITeamBuilder`, difficulty, behavior profiles)** — `Assets/Scripts/AI/`: `AITeamBuilder` (roster-sampling with duplicate-Sailor and tank-count constraints, per Plan 01 §2), `AIDifficulty`/`AIDifficultyParams` (Deckhand/Bosun/Skipper reaction/aim/leading parameter sets per Plan 01 §3), `AIBehaviorProfile` (Serve/Spike profiles keyed by the new `AttackArchetype`). No decision logic consumes these yet — `AIPerception`, utility states, and `AIInputDriver` itself are next.
+
 - **[2026-07-26] `ISessionProvider` online-readiness groundwork** — `Assets/Scripts/Core/Sessions/ISessionProvider.cs`: the interface a future Host/Join UI screen will bind to instead of any transport-specific type (LAN today, Online later), per Plan 03 §3's "do this now" checklist. Poll-style (`Tick`), matching `MatchController`'s convention.
 
 - **[2026-07-26] Ability framework: dash primitive, wall-spawn behavior, Ensign Ace's Super** — extracted `AbilityMotion.TranslateAlongAim` from `LeapSlamAuraAbilityBehavior` and built the standalone `DashAbilityBehavior` on it; added `WallSpawnAbilityBehavior` + a `SpawnedWall` marker (Block archetype, no Sailor assigned yet — ships dormant, blocks projectiles but not movement, pending real arena geometry); added `FanProjectileAbilityBehavior` and wired it as Ace's long-missing Super (Ace Barrage — five-projectile fan, moderate knockback). Added `AttackArchetype` (Ace=Serve, Anchor=Spike) for the Single Player AI work to key behavior profiles off. `Projectile` gained a shared `Spawn` factory so the basic-attack and Super paths don't duplicate spawn setup.
