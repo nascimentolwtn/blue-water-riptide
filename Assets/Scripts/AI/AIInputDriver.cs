@@ -23,7 +23,11 @@ namespace BlueWaterRiptide.AI
 
         IAIState _currentState;
         double _lastDecisionTime = double.NegativeInfinity;
-        double _stateEnteredTime;
+        // Seeded to -infinity, not 0, so the dwell-time gate in ReconsiderState can't block the
+        // very first real decision — Time.timeAsDouble is time-since-app-start, not per-scene, so
+        // a driver constructed shortly after launch would otherwise get stuck on the constructor's
+        // default _currentState (Engage) with zero scoring for up to MinStateDwellSeconds.
+        double _stateEnteredTime = double.NegativeInfinity;
 
         ParticipantId? _lastTargetId;
         double _targetAcquiredTime;

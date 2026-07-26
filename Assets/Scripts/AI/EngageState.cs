@@ -59,7 +59,7 @@ namespace BlueWaterRiptide.AI
 
             bool inRange = distance <= self.Definition.AttackRange;
             bool fireHeld = inRange && self.CurrentAmmo > 0;
-            bool superPressed = ShouldUseSuper(ctx, target, distance, preferredRange);
+            bool superPressed = ShouldUseSuper(ctx, target, distance);
 
             return new InputCommand(move, aim, false, fireHeld, superPressed, time);
         }
@@ -95,13 +95,21 @@ namespace BlueWaterRiptide.AI
             return ctx.Perception.GetNearestEnemy();
         }
 
-        static bool ShouldUseSuper(in AIContext ctx, SailorPawn target, float distance, float preferredRange)
+        static bool ShouldUseSuper(in AIContext ctx, SailorPawn target, float distance)
         {
             if (ctx.Self.SuperCharge01 < 1f) return false;
 
-            // Deckhand "uses Super late": wait until committed close to the target rather than
-            // popping it the instant it's available.
-            if (!ctx.Difficulty.UsesSuperPromptly && distance > preferredRange * 0.5f) return false;
+            // Deckhand "uses Super late": wait until committed within the profile's commit range
+            // (Plan 01 §3's "commit when within Nx slam range") before considering it, rather
+            // than popping it the instant it's available. Gating on a fraction of the *preferred
+            // engagement* range instead would be self-defeating — EngageState's own positioning
+            // never intentionally closes past preferredRange, so a threshold tighter than that
+            // could never be reached through the AI's own movement.
+            if (!ctx.Difficulty.UsesSuperPromptly)
+            {
+                float commitRange = ctx.Self.Definition.AttackRange * ctx.Profile.CommitRangeMultiplier;
+                if (distance > commitRange) return false;
+            }
 
             if (ctx.Profile.SuperClusterMinCount > 0)
             {
