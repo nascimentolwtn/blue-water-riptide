@@ -29,11 +29,8 @@ namespace BlueWaterRiptide.Gameplay.Combat
 
         public void Execute(SailorPawn owner)
         {
-            Vector3 destination = owner.transform.position + owner.transform.forward * _leapRange;
-            destination.x = Mathf.Clamp(destination.x, -owner.ArenaHalfExtents.x, owner.ArenaHalfExtents.x);
-            destination.z = Mathf.Clamp(destination.z, -owner.ArenaHalfExtents.y, owner.ArenaHalfExtents.y);
-
-            owner.transform.position = destination;
+            AbilityMotion.TranslateAlongAim(owner, _leapRange);
+            Vector3 destination = owner.transform.position;
 
             // Impact damage — enemies only.
             Collider[] impactHits = Physics.OverlapSphere(destination, _impactRadius);
