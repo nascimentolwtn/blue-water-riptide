@@ -29,12 +29,14 @@ namespace BlueWaterRiptide.Core
     /// </summary>
     public sealed class Session
     {
+        public ConnectionMode ConnectionMode { get; }
         public string RulesetId { get; }
         public string ArenaId { get; }
         public IReadOnlyList<ParticipantInfo> Participants { get; }
 
-        public Session(string rulesetId, string arenaId, IReadOnlyList<ParticipantInfo> participants)
+        public Session(ConnectionMode connectionMode, string rulesetId, string arenaId, IReadOnlyList<ParticipantInfo> participants)
         {
+            ConnectionMode = connectionMode;
             RulesetId = rulesetId;
             ArenaId = arenaId;
             Participants = participants;
