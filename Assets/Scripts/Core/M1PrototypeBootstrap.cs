@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using BlueWaterRiptide.AI;
 using BlueWaterRiptide.Characters;
+using BlueWaterRiptide.Core.Progression;
 
 namespace BlueWaterRiptide.Core
 {
@@ -34,8 +35,10 @@ namespace BlueWaterRiptide.Core
                 var playerDefinition = SailorDefinitionData.AdmiralAnchor;
                 var enemyDefinition = SailorDefinitionData.EnsignAce;
 
-                var playerGo = BuildPawnObject(root.transform, "Player_Anchor", new Vector3(-8f, 1f, 0f), Color.blue);
-                var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", new Vector3(8f, 1f, 0f), Color.red);
+                var playerSpawn = new Vector3(-8f, 1f, 0f);
+                var enemySpawn = new Vector3(8f, 1f, 0f);
+                var playerGo = BuildPawnObject(root.transform, "Player_Anchor", playerSpawn, Color.blue);
+                var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", enemySpawn, Color.red);
 
                 var playerPawn = playerGo.AddComponent<SailorPawn>();
                 var enemyPawn = enemyGo.AddComponent<SailorPawn>();
@@ -45,8 +48,9 @@ namespace BlueWaterRiptide.Core
                     new ParticipantInfo(new ParticipantId(0), Team.A, DriverType.Human, playerDefinition.Id),
                     new ParticipantInfo(new ParticipantId(1), Team.B, DriverType.AI, enemyDefinition.Id),
                 };
-                var session = new Session("sink-or-swim", "prototype", participants);
+                var session = new Session(ConnectionMode.SinglePlayer, "sink-or-swim", ArenaCatalog.Default.Id, participants);
                 var matchController = new MatchController(session, MatchRules.M1Defaults);
+                var progression = new ProgressionService(new SaveService());
 
                 // Touch is this project's real control scheme (Plan 01 §1) and what actually
                 // works on Android (no reliable mouse/hardware-keyboard device there — see
@@ -62,6 +66,27 @@ namespace BlueWaterRiptide.Core
 
                 playerPawn.ArenaHalfExtents = halfExtents;
                 enemyPawn.ArenaHalfExtents = halfExtents;
+
+                matchController.OnRoundReset += _ =>
+                {
+                    playerPawn.ResetForRound(playerSpawn, matchController.Rules.SuperChargeCarryoverFraction);
+                    enemyPawn.ResetForRound(enemySpawn, matchController.Rules.SuperChargeCarryoverFraction);
+                };
+
+                var playerId = new ParticipantId(0);
+                matchController.OnMatchEnd += winner =>
+                {
+                    int knockouts = matchController.KnockoutsByAttacker.TryGetValue(playerId, out int count) ? count : 0;
+                    var result = new MatchResult(
+                        ConnectionMode.SinglePlayer,
+                        playerDefinition.Id,
+                        localWon: winner == Team.A,
+                        localKnockouts: knockouts,
+                        wonViaSuddenDeath: matchController.InSuddenDeath,
+                        completed: true);
+
+                    progression.ApplyMatchResult(result, System.DateTime.UtcNow);
+                };
 
                 matchController.StartMatch();
 

@@ -11,6 +11,7 @@ namespace BlueWaterRiptide.Characters
     {
         public string Id;
         public string DisplayName;
+        public AttackArchetype Archetype;
         public float MaxHP;
         public float MoveSpeed;
 
@@ -30,6 +31,7 @@ namespace BlueWaterRiptide.Characters
         {
             Id = "sailor.ace",
             DisplayName = "Ensign Ace",
+            Archetype = AttackArchetype.Serve,
             MaxHP = 1300f,
             MoveSpeed = 6f,
             AttackRange = 14f,
@@ -37,13 +39,16 @@ namespace BlueWaterRiptide.Characters
             ReloadTime = 1.7f,
             KnockbackImmune = false,
             BasicAttack = new ProjectileAbilityBehavior(damage: 140f, speed: 25f, range: 14f),
-            Super = null // Ace's Super (Ace Barrage) isn't implemented yet — out of scope for this pass
+            // Super — Ace Barrage: five fast serves in a widening fan, each dealing basic-attack
+            // damage plus moderate knockback (00 §3).
+            Super = new FanProjectileAbilityBehavior(projectileCount: 5, spreadDegrees: 40f, damage: 140f, speed: 25f, range: 14f, knockbackForce: 5f)
         };
 
         public static SailorDefinitionData AdmiralAnchor => new SailorDefinitionData
         {
             Id = "sailor.anchor",
             DisplayName = "Admiral Anchor",
+            Archetype = AttackArchetype.Spike,
             MaxHP = 1900f,
             MoveSpeed = 3.5f,
             AttackRange = 4f,

@@ -5,11 +5,19 @@ using System.Linq;
 namespace BlueWaterRiptide.Core
 {
     /// <summary>
-    /// M1-scoped state machine: Setup -> Combat -> RoundEnd -> MatchEnd.
-    /// RoundCountdown and SuddenDeath are not implemented yet (Plan 01 M1 explicitly skips rounds/timer).
-    /// Pure C#, no UnityEngine references — Single Player runs it locally, LAN will run it host-authoritative.
+    /// Setup -> RoundCountdown -> Combat (with a SuddenDeath sub-state) -> RoundEnd -> (next
+    /// round's RoundCountdown | MatchEnd) -> Results, per Plan 00 §7.1. Pure C#, no UnityEngine
+    /// references — Single Player runs it locally, LAN will run it host-authoritative.
+    /// Callers must call Tick(deltaTime) once per frame/tick. Besides advancing
+    /// countdowns/timers, Tick also resolves any round-ending knockout(s) reported via
+    /// ReportKnockout since the previous Tick call — resolution is deliberately deferred rather
+    /// than handled inline, so multiple knockouts landing in the same frame (e.g. one AOE hit
+    /// wiping several stragglers at once) are evaluated together instead of by whichever order
+    /// ReportKnockout happened to be called in. A same-tick mutual kill (both teams reach zero
+    /// alive at once via attackers from each side) has no principled winner and replays the
+    /// round instead of picking one arbitrarily — see CheckSurvivors.
     /// </summary>
-    public enum MatchState { Setup, Combat, RoundEnd, MatchEnd }
+    public enum MatchState { Setup, RoundCountdown, Combat, RoundEnd, MatchEnd, Results }
 
     public sealed class MatchController
     {
@@ -17,11 +25,33 @@ namespace BlueWaterRiptide.Core
         public Session Session { get; }
         public MatchRules Rules { get; }
 
+        public int RoundNumber { get; private set; } = 1;
+        public bool InSuddenDeath { get; private set; }
+        public float CountdownRemaining { get; private set; }
+        public float RoundTimeRemaining { get; private set; }
+
+        /// <summary>Knockouts credited per attacker, accumulated for the whole match (not reset
+        /// between rounds) — feeds per-Sailor lifetime knockout stats at Results.</summary>
+        public IReadOnlyDictionary<ParticipantId, int> KnockoutsByAttacker => _knockoutsByAttacker;
+
         readonly Dictionary<Team, int> _roundWins;
         readonly HashSet<ParticipantId> _knockedOut = new HashSet<ParticipantId>();
+        readonly Dictionary<ParticipantId, int> _knockoutsByAttacker = new Dictionary<ParticipantId, int>();
+
+        float _roundResetRemaining;
+        float _suddenDeathRingRemaining;
+        int _suddenDeathRingIndex;
+        bool _survivorCheckPending;
+        readonly HashSet<Team> _pendingBatchAttackerTeams = new HashSet<Team>();
 
         public event Action<ParticipantId> OnKnockout;
+        /// <summary>Fired at the start of every round (including the first) before the countdown
+        /// begins — subscribers restore each pawn's HP/ammo/collider and spawn position here.</summary>
+        public event Action<int> OnRoundReset;
+        public event Action<int> OnRoundStart;
         public event Action<Team> OnRoundEnd;
+        public event Action OnSuddenDeathStart;
+        public event Action<int> OnSuddenDeathRingAdvance;
         public event Action<Team> OnMatchEnd;
 
         public MatchController(Session session, MatchRules rules)
@@ -34,26 +64,175 @@ namespace BlueWaterRiptide.Core
         public void StartMatch()
         {
             if (State != MatchState.Setup) return;
-            State = MatchState.Combat;
+            BeginRound();
         }
 
-        public void ReportKnockout(ParticipantId participant)
+        /// <summary>Advances countdowns/timers and resolves any pending round-ending knockout.
+        /// Safe to call every frame regardless of State.</summary>
+        public void Tick(float deltaTime)
+        {
+            switch (State)
+            {
+                case MatchState.RoundCountdown:
+                    CountdownRemaining -= deltaTime;
+                    if (CountdownRemaining <= 0f) BeginCombat();
+                    break;
+
+                case MatchState.Combat:
+                    if (_survivorCheckPending)
+                    {
+                        _survivorCheckPending = false;
+                        CheckSurvivors();
+                        if (State != MatchState.Combat) break;
+                    }
+                    TickCombat(deltaTime);
+                    break;
+
+                case MatchState.RoundEnd:
+                    _roundResetRemaining -= deltaTime;
+                    if (_roundResetRemaining <= 0f) BeginRound();
+                    break;
+            }
+        }
+
+        /// <summary>Reports that <paramref name="victim"/> was knocked out by <paramref name="attacker"/>.
+        /// Whether this ends the round is resolved on the next Tick(), not inline — see the class
+        /// doc comment.</summary>
+        public void ReportKnockout(ParticipantId victim, ParticipantId attacker)
         {
             if (State != MatchState.Combat) return;
-            if (!_knockedOut.Add(participant)) return;
+            if (!_knockedOut.Add(victim)) return;
 
-            OnKnockout?.Invoke(participant);
-            CheckRoundEnd();
+            _knockoutsByAttacker[attacker] = _knockoutsByAttacker.TryGetValue(attacker, out int count) ? count + 1 : 1;
+            _pendingBatchAttackerTeams.Add(FindTeam(attacker));
+            _survivorCheckPending = true;
+
+            OnKnockout?.Invoke(victim);
         }
 
-        void CheckRoundEnd()
+        void BeginRound()
         {
-            bool teamAAlive = Session.Participants.Any(p => p.Team == Team.A && !_knockedOut.Contains(p.Id));
-            bool teamBAlive = Session.Participants.Any(p => p.Team == Team.B && !_knockedOut.Contains(p.Id));
+            _knockedOut.Clear();
+            InSuddenDeath = false;
+            _suddenDeathRingIndex = 0;
+            _survivorCheckPending = false;
+            _pendingBatchAttackerTeams.Clear();
 
-            if (teamAAlive && teamBAlive) return;
+            OnRoundReset?.Invoke(RoundNumber);
 
-            Team winner = teamAAlive ? Team.A : Team.B;
+            if (Rules.CountdownDuration > 0f)
+            {
+                State = MatchState.RoundCountdown;
+                CountdownRemaining = Rules.CountdownDuration;
+            }
+            else
+            {
+                BeginCombat();
+            }
+        }
+
+        void BeginCombat()
+        {
+            State = MatchState.Combat;
+            RoundTimeRemaining = Rules.RoundTimeLimit;
+            OnRoundStart?.Invoke(RoundNumber);
+        }
+
+        void TickCombat(float deltaTime)
+        {
+            if (InSuddenDeath)
+            {
+                _suddenDeathRingRemaining -= deltaTime;
+                if (_suddenDeathRingRemaining <= 0f)
+                {
+                    _suddenDeathRingIndex++;
+                    _suddenDeathRingRemaining = Rules.SuddenDeathRingInterval;
+                    OnSuddenDeathRingAdvance?.Invoke(_suddenDeathRingIndex);
+                }
+                return;
+            }
+
+            if (Rules.RoundTimeLimit <= 0f) return;
+
+            RoundTimeRemaining -= deltaTime;
+            if (RoundTimeRemaining > 0f) return;
+
+            RoundTimeRemaining = 0f;
+            HandleRoundTimeout();
+        }
+
+        void HandleRoundTimeout()
+        {
+            int aliveA = CountAlive(Team.A);
+            int aliveB = CountAlive(Team.B);
+
+            if (aliveA == aliveB)
+            {
+                StartSuddenDeath();
+                return;
+            }
+
+            EndRound(aliveA > aliveB ? Team.A : Team.B);
+        }
+
+        void StartSuddenDeath()
+        {
+            InSuddenDeath = true;
+            _suddenDeathRingIndex = 0;
+            _suddenDeathRingRemaining = Rules.SuddenDeathRingInterval;
+            OnSuddenDeathStart?.Invoke();
+        }
+
+        void CheckSurvivors()
+        {
+            var attackerTeamsThisBatch = new HashSet<Team>(_pendingBatchAttackerTeams);
+            _pendingBatchAttackerTeams.Clear();
+
+            int aliveA = CountAlive(Team.A);
+            int aliveB = CountAlive(Team.B);
+
+            if (aliveA > 0 && aliveB > 0) return;
+
+            if (aliveA == 0 && aliveB == 0)
+            {
+                // Simultaneous wipe. Since a team can only reach 0 alive via an enemy attacker
+                // (no friendly fire anywhere in Gameplay/Combat) and the round would already have
+                // ended the moment either team first hit 0, both teams going to 0 in the same
+                // batch is, under today's combat rules, always a genuine mutual kill — attackers
+                // from both teams each landing the other side's final blow in the same tick (e.g.
+                // two crossing projectiles). There's no principled winner to pick from that, and
+                // choosing one via "whichever knockout was reported last" would just relocate the
+                // original order-dependence bug one level down — so replay the round instead.
+                // The single-attacker-team branch below is unreachable while that invariant
+                // holds; kept as a defensive fallback in case a future hazard/ability ever credits
+                // a wipe without a cross-team attacker.
+                if (attackerTeamsThisBatch.Count == 1)
+                {
+                    EndRound(attackerTeamsThisBatch.First());
+                    return;
+                }
+
+                BeginRound();
+                return;
+            }
+
+            EndRound(aliveA > 0 ? Team.A : Team.B);
+        }
+
+        Team FindTeam(ParticipantId id)
+        {
+            foreach (var p in Session.Participants)
+            {
+                if (p.Id == id) return p.Team;
+            }
+            return Team.B; // Unreachable with valid input — Session.Participants is the only source of ids.
+        }
+
+        int CountAlive(Team team) =>
+            Session.Participants.Count(p => p.Team == team && !_knockedOut.Contains(p.Id));
+
+        void EndRound(Team winner)
+        {
             _roundWins[winner]++;
             State = MatchState.RoundEnd;
             OnRoundEnd?.Invoke(winner);
@@ -62,7 +241,18 @@ namespace BlueWaterRiptide.Core
             {
                 State = MatchState.MatchEnd;
                 OnMatchEnd?.Invoke(winner);
+                State = MatchState.Results;
+                return;
             }
+
+            RoundNumber++;
+            // Deliberately never recurses into BeginRound() synchronously here, even when
+            // RoundResetDelay <= 0 — Tick()'s RoundEnd branch picks it up on the next call
+            // instead. Recursing in-line would let a second knockout reported later in the
+            // same call stack (e.g. from an AOE hit processed in a loop) land on the round
+            // that had just silently started, misattributing it and corrupting round-win
+            // bookkeeping.
+            _roundResetRemaining = Rules.RoundResetDelay;
         }
     }
 }
