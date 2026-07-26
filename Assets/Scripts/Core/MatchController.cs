@@ -8,10 +8,12 @@ namespace BlueWaterRiptide.Core
     /// Setup -> RoundCountdown -> Combat (with a SuddenDeath sub-state) -> RoundEnd -> (next
     /// round's RoundCountdown | MatchEnd) -> Results, per Plan 00 §7.1. Pure C#, no UnityEngine
     /// references — Single Player runs it locally, LAN will run it host-authoritative.
-    /// Callers must call Tick(deltaTime) once per frame/tick to advance countdowns/timers; with
-    /// MatchRules.M1Defaults (CountdownDuration/RoundTimeLimit both 0) every state resolves
-    /// synchronously and Tick is a no-op, which is how the M1 prototype's single-round,
-    /// no-timer scope stays intact without needing to call it at all.
+    /// Callers must call Tick(deltaTime) once per frame/tick. Besides advancing
+    /// countdowns/timers, Tick also resolves any round-ending knockout(s) reported via
+    /// ReportKnockout since the previous Tick call — resolution is deliberately deferred rather
+    /// than handled inline, so multiple knockouts landing in the same frame (e.g. one AOE hit
+    /// wiping both teams' last member at once) are evaluated together instead of by whichever
+    /// order ReportKnockout happened to be called in.
     /// </summary>
     public enum MatchState { Setup, RoundCountdown, Combat, RoundEnd, MatchEnd, Results }
 
@@ -26,14 +28,24 @@ namespace BlueWaterRiptide.Core
         public float CountdownRemaining { get; private set; }
         public float RoundTimeRemaining { get; private set; }
 
+        /// <summary>Knockouts credited per attacker, accumulated for the whole match (not reset
+        /// between rounds) — feeds per-Sailor lifetime knockout stats at Results.</summary>
+        public IReadOnlyDictionary<ParticipantId, int> KnockoutsByAttacker => _knockoutsByAttacker;
+
         readonly Dictionary<Team, int> _roundWins;
         readonly HashSet<ParticipantId> _knockedOut = new HashSet<ParticipantId>();
+        readonly Dictionary<ParticipantId, int> _knockoutsByAttacker = new Dictionary<ParticipantId, int>();
 
         float _roundResetRemaining;
         float _suddenDeathRingRemaining;
         int _suddenDeathRingIndex;
+        bool _survivorCheckPending;
+        ParticipantId? _lastKnockoutAttacker;
 
         public event Action<ParticipantId> OnKnockout;
+        /// <summary>Fired at the start of every round (including the first) before the countdown
+        /// begins — subscribers restore each pawn's HP/ammo/collider and spawn position here.</summary>
+        public event Action<int> OnRoundReset;
         public event Action<int> OnRoundStart;
         public event Action<Team> OnRoundEnd;
         public event Action OnSuddenDeathStart;
@@ -53,7 +65,8 @@ namespace BlueWaterRiptide.Core
             BeginRound();
         }
 
-        /// <summary>Advances countdowns/timers. Safe to call every frame regardless of State.</summary>
+        /// <summary>Advances countdowns/timers and resolves any pending round-ending knockout.
+        /// Safe to call every frame regardless of State.</summary>
         public void Tick(float deltaTime)
         {
             switch (State)
@@ -64,6 +77,12 @@ namespace BlueWaterRiptide.Core
                     break;
 
                 case MatchState.Combat:
+                    if (_survivorCheckPending)
+                    {
+                        _survivorCheckPending = false;
+                        CheckSurvivors();
+                        if (State != MatchState.Combat) break;
+                    }
                     TickCombat(deltaTime);
                     break;
 
@@ -74,13 +93,19 @@ namespace BlueWaterRiptide.Core
             }
         }
 
-        public void ReportKnockout(ParticipantId participant)
+        /// <summary>Reports that <paramref name="victim"/> was knocked out by <paramref name="attacker"/>.
+        /// Whether this ends the round is resolved on the next Tick(), not inline — see the class
+        /// doc comment.</summary>
+        public void ReportKnockout(ParticipantId victim, ParticipantId attacker)
         {
             if (State != MatchState.Combat) return;
-            if (!_knockedOut.Add(participant)) return;
+            if (!_knockedOut.Add(victim)) return;
 
-            OnKnockout?.Invoke(participant);
-            CheckSurvivors();
+            _knockoutsByAttacker[attacker] = _knockoutsByAttacker.TryGetValue(attacker, out int count) ? count + 1 : 1;
+            _lastKnockoutAttacker = attacker;
+            _survivorCheckPending = true;
+
+            OnKnockout?.Invoke(victim);
         }
 
         void BeginRound()
@@ -88,6 +113,10 @@ namespace BlueWaterRiptide.Core
             _knockedOut.Clear();
             InSuddenDeath = false;
             _suddenDeathRingIndex = 0;
+            _survivorCheckPending = false;
+            _lastKnockoutAttacker = null;
+
+            OnRoundReset?.Invoke(RoundNumber);
 
             if (Rules.CountdownDuration > 0f)
             {
@@ -159,7 +188,25 @@ namespace BlueWaterRiptide.Core
 
             if (aliveA > 0 && aliveB > 0) return;
 
+            if (aliveA == 0 && aliveB == 0 && _lastKnockoutAttacker.HasValue)
+            {
+                // Simultaneous wipe (e.g. one AOE hit knocking out both teams' last member in the
+                // same batch): award the round to whichever team scored that final knockout,
+                // rather than the arbitrary "Team A alive? no -> Team B" fallback below.
+                EndRound(FindTeam(_lastKnockoutAttacker.Value));
+                return;
+            }
+
             EndRound(aliveA > 0 ? Team.A : Team.B);
+        }
+
+        Team FindTeam(ParticipantId id)
+        {
+            foreach (var p in Session.Participants)
+            {
+                if (p.Id == id) return p.Team;
+            }
+            return Team.B; // Unreachable with valid input — Session.Participants is the only source of ids.
         }
 
         int CountAlive(Team team) =>

@@ -34,8 +34,10 @@ namespace BlueWaterRiptide.Core
                 var playerDefinition = SailorDefinitionData.AdmiralAnchor;
                 var enemyDefinition = SailorDefinitionData.EnsignAce;
 
-                var playerGo = BuildPawnObject(root.transform, "Player_Anchor", new Vector3(-8f, 1f, 0f), Color.blue);
-                var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", new Vector3(8f, 1f, 0f), Color.red);
+                var playerSpawn = new Vector3(-8f, 1f, 0f);
+                var enemySpawn = new Vector3(8f, 1f, 0f);
+                var playerGo = BuildPawnObject(root.transform, "Player_Anchor", playerSpawn, Color.blue);
+                var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", enemySpawn, Color.red);
 
                 var playerPawn = playerGo.AddComponent<SailorPawn>();
                 var enemyPawn = enemyGo.AddComponent<SailorPawn>();
@@ -62,6 +64,12 @@ namespace BlueWaterRiptide.Core
 
                 playerPawn.ArenaHalfExtents = halfExtents;
                 enemyPawn.ArenaHalfExtents = halfExtents;
+
+                matchController.OnRoundReset += _ =>
+                {
+                    playerPawn.ResetForRound(playerSpawn, matchController.Rules.SuperChargeCarryoverFraction);
+                    enemyPawn.ResetForRound(enemySpawn, matchController.Rules.SuperChargeCarryoverFraction);
+                };
 
                 matchController.StartMatch();
 

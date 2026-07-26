@@ -28,6 +28,8 @@ namespace BlueWaterRiptide.Characters
 
         IInputDriver _driver;
         MatchController _matchController;
+        Collider _collider;
+        Renderer _renderer;
         float _reloadTimer;
         float _fireCooldownTimer;
         float _superCharge;
@@ -43,6 +45,8 @@ namespace BlueWaterRiptide.Characters
             Definition = definition;
             _driver = driver;
             _matchController = matchController;
+            _collider = GetComponent<Collider>();
+            _renderer = GetComponent<Renderer>();
 
             CurrentHP = definition.MaxHP;
             CurrentAmmo = definition.MaxAmmo;
@@ -68,14 +72,37 @@ namespace BlueWaterRiptide.Characters
                 CurrentHP = 0f;
                 IsKnockedOut = true;
 
-                var collider = GetComponent<Collider>();
-                if (collider != null) collider.enabled = false;
+                if (_collider != null) _collider.enabled = false;
+                if (_renderer != null) _renderer.enabled = false;
 
-                var renderer = GetComponent<Renderer>();
-                if (renderer != null) renderer.enabled = false;
-
-                _matchController?.ReportKnockout(Id);
+                _matchController?.ReportKnockout(Id, source);
             }
+        }
+
+        /// <summary>Restores full HP/ammo/collider/rendering and repositions to the round's spawn
+        /// pad; Super charge carries over at <paramref name="superChargeCarryoverFraction"/>
+        /// (Plan 00 §1). Called by whoever built the Session, in response to
+        /// MatchController.OnRoundReset.</summary>
+        public void ResetForRound(Vector3 spawnPosition, float superChargeCarryoverFraction)
+        {
+            if (Definition == null) return;
+
+            CurrentHP = Definition.MaxHP;
+            CurrentAmmo = Definition.MaxAmmo;
+            IsKnockedOut = false;
+            _reloadTimer = 0f;
+            _fireCooldownTimer = 0f;
+            _knockbackVelocity = Vector3.zero;
+            _damageReductionFraction = 0f;
+            _damageReductionTimer = 0f;
+
+            _superCharge = Mathf.Clamp01(superChargeCarryoverFraction) * _superCharge;
+            SuperCharge01 = Definition.SuperChargeThreshold > 0f ? _superCharge / Definition.SuperChargeThreshold : 0f;
+
+            if (_collider != null) _collider.enabled = true;
+            if (_renderer != null) _renderer.enabled = true;
+
+            transform.position = spawnPosition;
         }
 
         /// <summary>Called by CombatResolver on whoever dealt damage — Super "charges by dealing damage" (00 §2).</summary>
