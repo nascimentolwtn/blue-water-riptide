@@ -29,28 +29,26 @@ namespace BlueWaterRiptide.Core.Progression
 
         public SaveProfile Load()
         {
-            if (!File.Exists(_savePath))
+            var fromMain = File.Exists(_savePath) ? TryParse(_savePath) : null;
+            if (fromMain != null)
             {
-                // Save() writes tmp -> delete old -> move tmp into place; a crash between the
-                // delete and the move leaves only the tmp file behind. Recover from it rather
-                // than silently starting over.
-                var recovered = File.Exists(TmpPath) ? TryParse(TmpPath) : null;
-                if (recovered != null)
-                {
-                    Migrate(recovered);
-                    return recovered;
-                }
-                return CreateDefaultProfile();
+                Migrate(fromMain);
+                return fromMain;
             }
 
-            var profile = TryParse(_savePath);
-            if (profile != null)
+            // Main is missing or unreadable. Save() writes tmp -> delete old -> move tmp into
+            // place, so a crash mid-write can leave a good tmp next to either nothing or a
+            // truncated/corrupt main file — try it before giving up, in both cases, otherwise a
+            // corrupt-main-plus-valid-tmp save loses the recoverable copy the moment the caller's
+            // next Save() overwrites that same tmp path with a fresh default profile.
+            var fromTmp = File.Exists(TmpPath) ? TryParse(TmpPath) : null;
+            if (fromTmp != null)
             {
-                Migrate(profile);
-                return profile;
+                Migrate(fromTmp);
+                return fromTmp;
             }
 
-            QuarantineUnreadableFile();
+            if (File.Exists(_savePath)) QuarantineUnreadableFile();
             return CreateDefaultProfile();
         }
 
