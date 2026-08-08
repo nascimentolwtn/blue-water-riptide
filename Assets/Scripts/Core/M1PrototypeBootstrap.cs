@@ -33,6 +33,8 @@ namespace BlueWaterRiptide.Core
                 BuildGround(root.transform);
                 var cam = BuildCamera();
 
+                var profile = SaveService.Load();
+
                 var playerDefinition = SailorDefinitionData.Venerated;
                 var enemyDefinition = SailorDefinitionData.EnsignAce;
 
@@ -57,7 +59,8 @@ namespace BlueWaterRiptide.Core
                 IInputDriver playerDriver = Application.isEditor
                     ? new KeyboardMouseInputDriver(playerGo.transform, cam)
                     : new TouchInputDriver();
-                var enemyDriver = new DummyAIInputDriver(enemyGo.transform, playerGo.transform, enemyDefinition.AttackRange);
+                var perceptionSource = new LiveSailorPerceptionSource(enemyPawn, playerPawn, matchController, arena);
+                var enemyDriver = new AIInputDriver(perceptionSource.BuildSnapshot, AIBehaviorProfile.ServePreset, AIDifficulty.BosunPreset, squadBrain: null, assignedLane: Lane.Center);
 
                 playerPawn.Initialize(new ParticipantId(0), Team.A, playerDefinition, playerDriver, matchController);
                 enemyPawn.Initialize(new ParticipantId(1), Team.B, enemyDefinition, enemyDriver, matchController);
@@ -70,13 +73,28 @@ namespace BlueWaterRiptide.Core
                 var loopHost = root.AddComponent<MatchLoopHost>();
                 loopHost.Initialize(matchController, playerPawn, enemyPawn, arena, matchController.Rules);
 
+                // Progression (Plan 05) applies once per match at match end: count the human's
+                // knockouts of the enemy for the "knockouts" arg, apply trophy/Doubloon deltas, save.
+                int enemyKnockoutsByPlayer = 0;
+                matchController.OnKnockout += participantId =>
+                {
+                    if (participantId == enemyPawn.Id) enemyKnockoutsByPlayer++;
+                };
+                matchController.OnMatchEnd += winner =>
+                {
+                    bool playerWon = winner == Team.A;
+                    bool suddenDeathWin = playerWon && matchController.CurrentCombatPhase == CombatPhase.SuddenDeath;
+                    var outcome = ProgressionService.ApplyMatchResult(profile, playerDefinition.Id, ConnectionModeIds.SinglePlayer, playerWon, suddenDeathWin, enemyKnockoutsByPlayer);
+                    SaveService.Save(profile);
+                    Debug.Log($"BWR_PROGRESSION: won={playerWon} trophyDelta={outcome.TrophyDelta} doubloonsEarned={outcome.DoubloonsEarned} rankedUp={outcome.RankedUp}");
+                };
+
                 matchController.StartMatch();
 
                 var hud = root.AddComponent<M1Hud>();
                 hud.Initialize(playerPawn, enemyPawn, matchController);
                 if (!Application.isEditor) root.AddComponent<TouchHud>();
 
-                var profile = SaveService.Load();
                 Debug.Log($"BWR_SAVE: profile '{profile.profileId}' ready — displayName={profile.displayName}, doubloons={profile.doubloons}, sailors={profile.sailors.Count}");
             }
             catch (System.Exception e)

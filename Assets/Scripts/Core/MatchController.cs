@@ -30,6 +30,9 @@ namespace BlueWaterRiptide.Core
         /// <summary>Elapsed seconds since SuddenDeath began. 0 while not in SuddenDeath.</summary>
         public float SuddenDeathElapsed => _suddenDeathActive ? _suddenDeathTimer : 0f;
 
+        /// <summary>Seconds left in the current round's Combat/Normal phase; 0 outside that phase (e.g. during Sudden Death, where there's no countdown to a "timeout" anymore).</summary>
+        public float RoundTimeRemaining => (State == MatchState.Combat && _currentCombatPhase == CombatPhase.Normal) ? _roundTimer : 0f;
+
         readonly Dictionary<Team, int> _roundWins;
         readonly HashSet<ParticipantId> _knockedOut = new HashSet<ParticipantId>();
 
