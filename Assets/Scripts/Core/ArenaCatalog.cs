@@ -27,6 +27,9 @@ namespace BlueWaterRiptide.Core
 
         /// <summary>Floor on the shrinking safe zone's half-extents so it can never collapse to zero/negative.</summary>
         public float SuddenDeathMinHalfExtent = 3f;
+
+        /// <summary>Resources-loadable path for the arena's greybox prefab, e.g. via `Resources.Load&lt;GameObject&gt;(PrefabResourcePath)`.</summary>
+        public string PrefabResourcePath;
     }
 
     /// <summary>
@@ -49,6 +52,7 @@ namespace BlueWaterRiptide.Core
                 SpawnImmunityDuration = 1.5f,
                 SuddenDeathRingShrinkStep = 2f,
                 SuddenDeathMinHalfExtent = 3f,
+                PrefabResourcePath = "Environment/TidelineCove",
             }
         };
 
