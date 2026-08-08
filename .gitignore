@@ -13,6 +13,14 @@
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
+Assets/Art/Characters/*.zip
+
+# Performance test data (transient)
+Assets/Resources/PerformanceTestRun*.json
+Assets/Resources/PerformanceTestRun*.json.meta
+
+# Duplicate/test character assets
+Assets/Resources/Characters/
 
 # Uncomment this line if you wish to ignore the asset store tools plugin
 # /[Aa]ssets/AssetStoreTools*
