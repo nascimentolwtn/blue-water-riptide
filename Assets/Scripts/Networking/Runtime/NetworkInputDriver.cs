@@ -56,5 +56,19 @@ namespace BlueWaterRiptide.Networking.Runtime
             _lastReceived = new InputCommand(move, aim, firePressed, fireHeld, superPressed, timestamp);
             _hasReceivedAny = true;
         }
+
+        // Non-host peers disable SailorPawn.Update() entirely (see NetworkPawnPresenter) — a client
+        // must never re-run the authoritative movement/combat sim locally — which means nothing would
+        // otherwise call Sample() to relay the owning client's input to the host. This keeps that
+        // relay alive independent of whether anything downstream reads the return value. The host's
+        // own pawn doesn't need this: its SailorPawn.Update() already calls Sample() once per frame
+        // as part of running the authoritative sim.
+        void Update()
+        {
+            if (IsSpawned && IsOwner && !IsServer)
+            {
+                Sample(Time.timeAsDouble);
+            }
+        }
     }
 }
