@@ -15,11 +15,14 @@ namespace BlueWaterRiptide.Core
 
         static string SavePath => Path.Combine(Application.persistentDataPath, SaveFileName);
 
+        /// <summary>Current save schema version (Plan 05 §6). Bump alongside a migration step in Load() whenever the shape changes.</summary>
+        public const int CurrentSchemaVersion = 2;
+
         public static ProfileData CreateDefault()
         {
             return new ProfileData
             {
-                schemaVersion = 1,
+                schemaVersion = CurrentSchemaVersion,
                 profileId = Guid.NewGuid().ToString(),
                 displayName = "Sailor",
                 createdAtUtc = DateTime.UtcNow.ToString("o"),
@@ -47,6 +50,15 @@ namespace BlueWaterRiptide.Core
                     var fresh = CreateDefault();
                     Save(fresh);
                     return fresh;
+                }
+
+                if (loaded.schemaVersion < CurrentSchemaVersion)
+                {
+                    // JsonUtility already leaves fields absent from older JSON at their C# defaults
+                    // (or field initializers, e.g. new List<>()), so nothing more than the version
+                    // bump + re-save is needed to migrate v1 -> v2 (Plan 05 §6).
+                    loaded.schemaVersion = CurrentSchemaVersion;
+                    Save(loaded);
                 }
 
                 return loaded;

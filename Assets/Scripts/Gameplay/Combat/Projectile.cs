@@ -1,5 +1,6 @@
 using BlueWaterRiptide.Characters;
 using BlueWaterRiptide.Core;
+using BlueWaterRiptide.Gameplay.Court;
 using UnityEngine;
 
 namespace BlueWaterRiptide.Gameplay.Combat
@@ -48,6 +49,12 @@ namespace BlueWaterRiptide.Gameplay.Combat
 
         void OnTriggerEnter(Collider other)
         {
+            if (other.GetComponent<TemporaryObstacle>() != null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             var pawn = other.GetComponent<SailorPawn>();
             if (pawn == null) pawn = other.GetComponentInParent<SailorPawn>();
             if (pawn == null) return;
