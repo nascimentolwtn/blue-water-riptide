@@ -33,10 +33,10 @@ namespace BlueWaterRiptide.Core
                 BuildGround(root.transform);
                 var cam = BuildCamera();
 
-                var playerDefinition = SailorDefinitionData.AdmiralAnchor;
+                var playerDefinition = SailorDefinitionData.Venerated;
                 var enemyDefinition = SailorDefinitionData.EnsignAce;
 
-                var playerGo = BuildPawnObject(root.transform, "Player_Anchor", arena.SpawnPositionsTeamA[0], Color.blue);
+                var playerGo = BuildPawnObjectFromPrefab(root.transform, "Player_Venerated", arena.SpawnPositionsTeamA[0], "Characters/Venerated", scale: 1.6f);
                 var enemyGo = BuildPawnObject(root.transform, "Enemy_Ace", arena.SpawnPositionsTeamB[0], Color.red);
 
                 var playerPawn = playerGo.AddComponent<SailorPawn>();
@@ -133,6 +133,21 @@ namespace BlueWaterRiptide.Core
             camGo.transform.position = new Vector3(0f, 20f, -14f);
             camGo.transform.LookAt(Vector3.zero, Vector3.up);
             return cam;
+        }
+
+        static GameObject BuildPawnObjectFromPrefab(Transform parent, string name, Vector3 position, string prefabPath, float scale = 1f)
+        {
+            var prefab = Resources.Load<GameObject>(prefabPath);
+            if (prefab == null)
+            {
+                Debug.LogError($"BWR_BOOT: Failed to load prefab at {prefabPath} — falling back to capsule primitive");
+                return BuildPawnObject(parent, name, position, Color.gray);
+            }
+
+            var go = Object.Instantiate(prefab, position, Quaternion.identity, parent);
+            go.name = name;
+            go.transform.localScale = Vector3.one * scale;
+            return go;
         }
 
         static GameObject BuildPawnObject(Transform parent, string name, Vector3 position, Color color)

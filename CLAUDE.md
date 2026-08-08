@@ -52,7 +52,7 @@ Read in order; each assumes the ones before it:
 
 **Emulator**
 - `emulator -avd Pixel_9_API_35` — Start the Android emulator
-- `emulator -kill-all` — Kill all running emulator instances
+- `Get-Process | Where-Object {$_.ProcessName -like "*qemu*"} | Stop-Process -Force -ErrorAction SilentlyContinue` — Kill all running emulator instances
 - `emulator -avd Pixel_9_API_35 -wipe-data` — Start emulator and wipe data (fresh state)
 
 **ADB & Installation**

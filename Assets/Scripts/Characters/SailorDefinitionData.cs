@@ -54,5 +54,19 @@ namespace BlueWaterRiptide.Characters
             BasicAttack = new MeleeArcAbilityBehavior(damage: 190f, radius: 4f, coneAngleDegrees: 100f, knockbackForce: 8f),
             Super = new LeapSlamAuraAbilityBehavior(leapRange: 10f, impactRadius: 3f, impactDamage: 200f, auraRadius: 5f, auraDuration: 6f, auraDamageReductionFraction: 0.4f)
         };
+
+        public static SailorDefinitionData Venerated => new SailorDefinitionData
+        {
+            Id = "sailor.venerated",
+            DisplayName = "Venerated",
+            MaxHP = 1500f,
+            MoveSpeed = 5f,
+            AttackRange = 8f,
+            MaxAmmo = 3,
+            ReloadTime = 2f,
+            KnockbackImmune = false,
+            BasicAttack = new ProjectileAbilityBehavior(damage: 160f, speed: 22f, range: 12f),
+            Super = null // Placeholder for future Super ability
+        };
     }
 }
