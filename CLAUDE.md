@@ -10,22 +10,70 @@ The Unity project builds/runs on Android and a first vertical slice exists: `Ass
 
 **Build & run**: open the repo folder as a project in Unity Hub, then `File → Build And Run` (deploys to whatever's visible in `adb devices`) — or headlessly via `Assets/Editor/BuildTools/BuildScript.cs` (`-executeMethod BlueWaterRiptide.EditorTools.BuildScript.BuildAndroidDevelopment`, needs the Editor GUI closed first). No automated test suite yet — still a future backlog item.
 
-The authoritative source for what to build is `.claude/plans/`, not this file — read the relevant plan doc(s) before writing any code in an area.
+## Game Design
 
-## Critical: theme vs mechanics
+**Core concept:** 3v3 top-down arena brawler in the *Brawl Stars* pattern. Each player controls one Sailor with a **basic attack** (ammo/charge-based, ranged or melee) and a **Super** that charges by dealing damage. Knock out the opposing team to win. Marine/navy and beach-volleyball are **cosmetic theme only** (character names, attack names, art, arena dressing) — **there is no ball, no scoring zones, no sport rules.** The actual game is a straightforward arena fight.
 
-The game's marine/navy/volleyball theme is **cosmetic only** (character names, attack names, art, arena dressing). The actual game is a straightforward *Brawl Stars*–pattern top-down arena brawler: basic attack (ammo/charge-based) + charged Super per character, team-elimination win condition. **There is no ball, no volleyball scoring, no sport rules** — an early draft of `00-game-design-overview.md` got this wrong and was corrected; don't reintroduce ball/scoring-zone mechanics without an explicit new user request. `README.md`'s wording ("beach volleyball", "ball physics, serve/spike/block mechanics" in the folder comments) predates this correction and is stale — the plans in `.claude/plans/` are authoritative over the README for gameplay rules.
+**Two independent axes:** (1) **Connection mode** — how players get into a match: Single Player vs AI, Local Network (LAN), Online (future). (2) **Ruleset** — the win condition. v1 ships one ruleset, used by all connection modes.
 
-## Design docs (`.claude/plans/`)
+**v1 ruleset: "Sink or Swim"** (knockout pattern)
+- **3v3, best of 3 rounds, no respawns within a round.**
+- A round ends when one team is fully knocked out (that team loses), or when the **90-second round timer** expires — then the team with more surviving Sailors wins.
+- Survivor tie at timeout → **Rising Tide sudden death**: water floods inward from edges (one tile ring every ~5s, dealing damage over time) until a knockout decides the round.
+- First team to **2 round wins** takes the match (~3–5 minutes total). Between rounds: 5s reset, everyone back at spawn pads at full HP; **Super carry carries over at 50%**.
+- Chosen for simplicity (no mid-round respawn logic, unambiguous end state) while producing tense, short mobile matches.
 
-Read in order; each assumes the ones before it:
-- `00-game-design-overview.md` — core concept, connection-mode-vs-ruleset split, v1 ruleset ("Sink or Swim" knockout), character framework, v1 roster (exactly 2 Sailors: Ensign Ace, Admiral Anchor), v1 arena (Tideline Cove), progression (Trophies/Voyage Road/Doubloons), and the shared systems list below.
-- `01-single-player-mode.md` — vs-AI mode; `AITeamBuilder` samples from the same 2-Sailor pool.
-- `02-local-network-mode.md` — LAN co-op/PvP via Unity Netcode for GameObjects + Unity Transport, UDP broadcast for host discovery.
-- `03-online-mode-future.md` — deferred internet lobby/matchmaking; lighter detail, includes a "do this now" checklist for keeping modes 1-2 online-ready.
-- `04-menu-navigation-lobby.md` — full screen flow (Home → Mode Select → per-mode lobby → Match → Results), `UIStateController` nav stack.
-- `05-gamification-trophies-ranking.md` — Fleet Rank (cosmetic ship-class tiers from account trophy total), leaderboard scoping, save schema.
-- `06-splash-screen-and-icon.md` — Boot-scene splash content and Android app icon spec, tied to `docs/History.md`'s ship's-bell trophy motif; flags the unconfirmed Unity Personal/Pro tier as a dependency.
+**Match flow:** `Round countdown (3s) → Combat → Round end → next round or match results`. Knocked-out players spectate until the round ends.
+
+**Character framework**
+- Every Sailor has: **Basic attack** (ammo-style: 3 charges regenerating over 1.5–2.5s), **Super** (charges by dealing damage; persists until used), **Trait** (small always-on passive).
+- Attack archetypes (volleyball-themed labels): `Serve` (long-range straight projectile), `Lob` (arcing, clears walls), `Spike` (short-range AOE/melee), `Set` (support/utility), `Block` (defensive).
+
+**v1 roster: 2 Sailors**
+- **Ensign Ace** (Starter, All-rounder / ranged, `Serve` archetype): 1300 HP, Normal speed, 140 damage × 3 ammo (1.7s reload). **Jump Serve** 3-shot burst ranged attack. **Ace Barrage** Super: 5 fan-spread serves with knockback. **Fresh Legs** trait: +10% move speed for 3s after knockout.
+- **Admiral Anchor** (Rare, Tank / frontline, `Spike` archetype): 1900 HP, Slow speed, 190 damage × 3 ammo (2.4s reload). **Anchor Slam** close-range frontal AOE with knockback. **Drop Anchor** Super: leap to aimed spot (clears walls) + 6s aura granting nearby allies +40% damage reduction. **Ballast** trait: immune to knockback.
+
+**v1 arena: Tideline Cove**
+- 34×20 tiles, symmetric beach court. Three distinct lanes: north (dune grass stealth), center (volleyball net chokepoint), south (shallow water flank).
+- Terrain rules (theme-skinned standard mechanics): solid cover blocks movement and straight projectiles; arcing attacks clear it; destructible cover breaks under Supers; shallow water slows movement 30%; dune grass conceals (hidden unless enemy is adjacent).
+- Layout (mirrored per half): volleyball nets (7-tile segments with 6-tile gap at midcourt), beached rowboat (3×2 solid), driftwood logs (2×1 solid, diagonal approaches), coral rock clusters (2×2 destructible), tidal inlet (3-tile shallow water, south edge), dune grass patches (2×3, north edge).
+- Rising Tide sudden death: floods inward from south and boundaries, forcing final fight toward center net gap.
+
+**Progression (lightweight for v1)**
+- **Trophies** — per-Sailor score: +4 win / −2 loss (Single Player: +2/0, capped contribution). Total trophies drive the **Voyage Road**, a single linear reward track.
+- **Voyage Road** unlocks (v1): Admiral Anchor at an early node (Ace is starter), then Doubloon caches and cosmetic flags; later nodes pre-labeled for future Sailors/arenas.
+- **Doubloons** — only currency in v1. Earned from match results and Voyage Road nodes. Spent on **Sailor level-ups** (levels 1–5, +5% HP/damage per level; costs 100/200/400/800).
+- **Out of scope v1** (design later; no hooks beyond data headroom): premium currency, battle pass, gadget/star-power equivalents, skins shop, clubs.
+- Persistence: local JSON save (`Application.persistentDataPath`), versioned schema.
+
+**Control scheme** (mobile touch, input-agnostic via Input System)
+- **Left virtual joystick**: movement.
+- **Right attack button**: tap = quick attack at nearest target (soft auto-aim); drag = aim indicator; release = fire; drag back = cancel.
+- **Super button** (above attack): same tap/drag-aim; greyed until charged.
+All gameplay actions resolve through `InputCommand` abstraction (move vector, aim vector, action id, timestamp) so touch, gamepad, AI, and network drivers are interchangeable.
+**Game Modes (connection modes)**
+
+1. **Single Player** — pick a Sailor, play against AI-controlled opposing team (3v3: you + 2 AI teammates vs 3 AI opponents). Same Sink or Swim ruleset, same Tideline Cove arena. AI uses utility-state behavior scoring (Engage, Retreat, Regroup, Flank, HoldChoke, SuddenDeathPush), per-archetype profiles (Serve/Spike presets), and lightweight squad coordination. Three difficulty tiers: Deckhand (easy, 400ms reaction), Bosun (normal, 250ms reaction), Skipper (hard, 150ms reaction with target leading).
+
+2. **Local Network (LAN)** — co-op or PvP with nearby devices over local Wi-Fi. Host discovers clients via UDP broadcast; all gameplay runs host-authoritative (clients send input via RPC, host runs match simulation, mirrors state back via `NetworkMatchState`/`NetworkSailorState`). Transport: Unity Netcode for GameObjects + Unity Transport, direct IP:port connection (default 7777). Disconnect handling: disconnected players get AI takeover for 60s; host loss ends the match.
+
+3. **Online (future)** — lobby system to join a friend's team or queue solo against other players over the internet. Deferred post-v1; architecture seam (`ISessionProvider`) is in place so modes 1-2 stay online-ready.
+
+**UI & Navigation** (Plan 04)
+
+Four scenes total:
+- **Boot**: initializes services (save/profile, catalogs, audio), shows splash logo, auto-advances to Home.
+- **MainMenu**: Home hub (PLAY, Locker, Voyage Road, Settings, Mode Select), Sailor Locker (browse, view stats, level-ups), Voyage Road screen, Settings, Mode Select (Single Player / LAN / Online-stub), LAN entry screens (Host-or-Join, Host Config, Lobby).
+- **TeamSelect**: player picks Sailor before Single Player match (locked Sailors greyed with unlock hint).
+- **Match**: loads arena prefab by id, spawns Sailors, runs MatchController, shows Results overlay at MatchEnd (trophies/Doubloons delta, rematch / menu buttons).
+
+**Splash & Icon** (Plan 06)
+
+App icon and Boot-scene splash logo: ship's bell mark from `docs/History.md`'s Tideline Cup trophy motif (navy `#0E2A47` on light background). Player Settings assignment and Unity Personal/Pro tier dependency (unconfirmed — ability to suppress Unity logo).
+
+**Asset Sourcing** (Plan 07)
+
+AI generation prompts for Sailor graphics, arena/props, audio, UI icons live in `.claude/prompts/` — ready-to-paste batches for Gemini, Tripo, Suno. Free marketplace browsing first (Sketchfab, Poly Haven, itch.io, Kenney); Tripo free tier as fallback.
 
 ## Architecture (from the plans — build to this shape)
 

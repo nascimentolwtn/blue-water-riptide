@@ -8,9 +8,9 @@
 
 ## Domain Behavior Guardrails (Highest Priority)
 1. **[2026-07-17] This is a Brawl Stars–pattern arena brawler, NOT a volleyball sport sim**
-   Do instead: marine/navy/volleyball is cosmetic theme only (names, art, flavor text). Core rules are basic-attack + charged Super + team-elimination, per `.claude/plans/00-game-design-overview.md`. Never reintroduce a ball, scoring zones, or sport rules into core mechanics without an explicit new user request.
+   Do instead: marine/navy/volleyball is cosmetic theme only (names, art, flavor text). Core rules are basic-attack + charged Super + team-elimination, per `CLAUDE.md`. Never reintroduce a ball, scoring zones, or sport rules into core mechanics without an explicit new user request.
 2. **[2026-07-17] v1 content scope is locked: 2 Sailors, 1 arena**
-   Do instead: Ensign Ace + Admiral Anchor only; Tideline Cove is the only arena. Don't expand roster/arena count in plans or code without the user explicitly asking — expansion paths are already documented as roadmap notes in `00-game-design-overview.md` §4.
+   Do instead: Ensign Ace + Admiral Anchor only; Tideline Cove is the only arena. Don't expand roster/arena count in plans or code without the user explicitly asking — expansion paths documented in `CLAUDE.md`'s Content Roadmap.
 3. **[2026-07-17] Terminology: "Sailor," never "brawler"**
    Do instead: match existing plan docs' vocabulary (Sailor, connection mode vs ruleset, Squadron) when writing new plans or code comments.
 4. **[2026-07-17] Two independent axes: connection mode vs ruleset**
@@ -25,8 +25,8 @@
    Do instead: confirmed working config — IL2CPP + ARM64, URP, Input System (New), **Optimized Frame Pacing disabled** (Player Settings → Android → Resolution and Presentation), custom base Gradle template forcing `kotlin-stdlib` 1.8.22. Don't re-suggest "Unity isn't installed" or Mono/Vulkan-default guidance.
 2. **[2026-07-18] Swappy/Vulkan SIGABRT crash on emulator (silent close, no dialog)**
    Do instead: if an Android build installs but closes instantly with no visible error, check `adb logcat -d | grep -i fatal` first — Android often doesn't show a crash dialog for native (IL2CPP) crashes. This project's specific case: Swappy frame-pacing lib crashes in `SwappyVk_initAndGetRefreshCycleDuration` on emulator Vulkan; fixed by disabling Optimized Frame Pacing (see above). If it recurs on a different symptom, fall back to dropping Vulkan from Graphics APIs (GLES3-only) for emulator testing.
-3. **[2026-07-17] New plan docs need prior plans read first**
-   Do instead: before spawning a subagent for a new `.claude/plans/*.md` file, tell it to read all existing numbered plans first so terminology/scope stay consistent (see guardrails above).
+3. **[2026-08-09] Design docs consolidated into CLAUDE.md; implementation plans (08–11) reference it**
+   Do instead: when working on a new implementation plan or feature, read `CLAUDE.md` for design/architecture context (game rules, connection modes, character framework, progression). Plans 00–07 (foundational design) have been consolidated into CLAUDE.md and README.md; plans 08–11 (active execution/implementation) live in `.claude/plans/` and reference CLAUDE.md.
 4. **[2026-07-18] Android black screen root cause: URP was never actually assigned as the active pipeline**
    Do instead: URP being installed as a package does NOT make it active — check `ProjectSettings/GraphicsSettings.asset`'s `m_CustomRenderPipeline` and every entry in `ProjectSettings/QualitySettings.asset`'s `customRenderPipeline`; if all `{fileID: 0}`, the project is silently running the Built-in Render Pipeline and URP-tagged shaders render nothing (no crash, no error — just black). This went unnoticed here until real geometry existed to render. Fix headlessly via `Tools > Blue Water Riptide > Ensure URP Pipeline Asset` (`Assets/Editor/BuildTools/RenderPipelineSetup.cs`, invokable via `-executeMethod` — don't hand-author a Pipeline Asset's YAML, it's a large versioned ScriptableObject, too easy to get subtly wrong). Secondary/defensive fix also applied: Always Included Shaders in the same GraphicsSettings file, in case runtime-created Materials (`Shader.Find(...)`) ever get stripped. Also check `ProjectSettings/EditorBuildSettings.asset`'s `m_Scenes` isn't empty (silently falls back to whatever scene was open in the Editor).
 5. **[2026-07-18] IL2CPP strips Collider types added implicitly by `GameObject.CreatePrimitive` — breaks `[RequireComponent(typeof(Collider))]` on-device only**

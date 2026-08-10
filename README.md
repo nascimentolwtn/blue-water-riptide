@@ -51,14 +51,14 @@ docs/
 
 > Note: `ProjectSettings/` and `Packages/packages-lock.json` are normally generated/managed by the Unity Editor. Open this folder as a project in Unity Hub to finish initializing them.
 
-## Design & Implementation Plans
+## Game Design Details
 
-See [`.claude/plans/`](.claude/plans/) for the initial version plans:
+See [`CLAUDE.md`](CLAUDE.md) for the complete game design, including core ruleset ("Sink or Swim"), character framework, v1 roster (Ensign Ace, Admiral Anchor), Tideline Cove arena, progression systems (Trophies, Voyage Road, Doubloons), and all three connection modes.
 
-- `00-game-design-overview.md` — core concept, roster translation from Brawl Stars, match rules, meta systems.
-- `01-single-player-mode.md`
-- `02-local-network-mode.md`
-- `03-online-mode-future.md`
-- `04-menu-navigation-lobby.md`
-- `05-gamification-trophies-ranking.md`
-- `06-splash-screen-and-icon.md`
+## Implementation Plans
+
+See [`.claude/plans/`](.claude/plans/) for active implementation/execution plans:
+- `08-core-systems-implementation.md` — best-of-3 match flow, SuddenDeath, ArenaCatalog, SaveService (in progress)
+- `09-graphics-and-alpha-build.md` — Sailor models, arena art, audio, UI graphics sourcing (ongoing)
+- `10-lan-mode-implementation.md` — LAN networking code & lobby UI wire-up (ongoing)
+- `11-alpha-build-automation.md` — build → install → launch → verify scripting & asset pipeline (ongoing)
